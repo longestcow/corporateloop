@@ -15,6 +15,7 @@ public class Player : MonoBehaviour
     float input;
     public float speed;
     public float health = 20;
+    public Scrollbar healthbar;
     StateManager stateManager;
     int[] items = new int[3];
     /*
@@ -52,14 +53,13 @@ public class Player : MonoBehaviour
         Restart();
     }
 
-    void Restart()
+    void Restart() //called after you die and restart from the beginning of the level, don't restart scene
     {
         itemholders[0].sprite = itemsprites[items[0]];
         itemholders[1].sprite = itemsprites[items[1]];
         itemholders[2].sprite = itemsprites[items[2]];
     }
 
-    // Update is called once per frame
     void Update()
     {
         if (!stateManager.started || stateManager.paused) return;
@@ -79,35 +79,43 @@ public class Player : MonoBehaviour
         if (anim.GetCurrentAnimatorClipInfo(0)[0].clip.name.Contains("Punch") || anim.GetCurrentAnimatorClipInfo(0)[0].clip.name.Contains("Jab"))
             input /= 10;
 
+        //Cool camera effect
         cam.transform.position = new Vector3(Mathf.Lerp(cam.transform.position.x, input * speed / 10f, 0.01f), cam.transform.position.y, -10);
         
         rb.velocity = new Vector2(input * speed, rb.velocity.y);
         if (input != 0) sprite.flipX = input < 0;
 
+        //For checking if items are being used
         if (Input.GetKeyDown(stateManager.keybinds[0])) UseItem(0);
         if (Input.GetKeyDown(stateManager.keybinds[1])) UseItem(1);
         if (Input.GetKeyDown(stateManager.keybinds[2])) UseItem(2);
+
+        //Sets healthbar size
+        healthbar.size = (health / 20f);
     }
 
     private void FixedUpdate()
     {
+        //for cooldown of items
         itemcooldown[0]--;
         itemcooldown[1]--;
         itemcooldown[2]--;
 
+        //for making items under cooldown a darker colour
         itemholders[0].color = (itemcooldown[0] >= 0)? new Color(0.3f, 0.3f, 0.3f, 1) : new Color(1 ,1 ,1 ,1); 
         itemholders[1].color = (itemcooldown[1] >= 0)? new Color(0.3f, 0.3f, 0.3f, 1) : new Color(1 ,1 ,1 ,1); 
-        itemholders[2].color = (itemcooldown[2] >= 0)? new Color(0.3f, 0.3f, 0.3f, 1) : new Color(1 ,1 ,1 ,1); 
+        itemholders[2].color = (itemcooldown[2] >= 0)? new Color(0.3f, 0.3f, 0.3f, 1) : new Color(1 ,1 ,1 ,1);
+
     }
 
-    void AddItem(int itemid)
+    void AddItem(int itemid) //call with id of the item to add 
     {
         items[2] = items[1];
         items[1] = items[0];
         items[0] = itemid;
     }
 
-    void UseItem(int outofthree)
+    void UseItem(int outofthree) //called when an item is being used
     {
         if (itemcooldown[outofthree] >= 0) return;
 

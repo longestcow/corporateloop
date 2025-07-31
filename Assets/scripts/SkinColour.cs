@@ -29,7 +29,7 @@ public class SkinColour : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.R))
+        /*if (Input.GetKeyDown(KeyCode.R))
         {
             float x = Random.Range(0.3f, 1f);
             skincol = new Color(x, x * 0.7810523f, x * 0.5424528f);
@@ -39,6 +39,6 @@ public class SkinColour : MonoBehaviour
             if (Random.Range(0, 100) >= 99) skincol = new Color(0.4723749f, 0.0867746f, 0.735849f);
             this.gameObject.GetComponent<SpriteRenderer>().material.SetColor("_TargetColor", skincol);
             this.gameObject.GetComponent<SpriteRenderer>().material.SetColor("_BaldColor", skincol2);
-        }
+        }*/
     }
 }
