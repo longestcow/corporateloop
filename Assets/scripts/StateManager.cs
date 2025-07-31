@@ -11,7 +11,18 @@ public class StateManager : MonoBehaviour
     [HideInInspector] public bool started = false, paused = false, options = false, waitingKeybind = false;
     int currKeybindID;
     public GameObject pause, keybindsParent;
-    [HideInInspector] public KeyCode[] keybinds = {KeyCode.Mouse0, KeyCode.Mouse1, KeyCode.Q, KeyCode.E, KeyCode.Space, KeyCode.A, KeyCode.D, KeyCode.W};
+
+    public KeyCode[] keybinds = {KeyCode.Mouse0, KeyCode.Mouse1, KeyCode.E, KeyCode.Space, KeyCode.A, KeyCode.D, KeyCode.W, KeyCode.Escape};
+    /*
+     * 0 - ability 1
+     * 1 - ability 2
+     * 2 - ability 3
+     * 3 - punch
+     * 4 - left
+     * 5 - right
+     * 6 - interact  
+     * 7 - pause (not implemented yet)
+     */
 
     void Start()
     {
@@ -35,7 +46,6 @@ public class StateManager : MonoBehaviour
                     currKeybindID = 999;
                     break;
                 }
-
 
             }
 		
