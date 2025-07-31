@@ -59,12 +59,16 @@ public class StateManager : MonoBehaviour
         {
             paused = false;
             Time.timeScale = 1.0f;
+            options = false;
+            canvasAnim.SetTrigger("optionsClose");
         }
         else
         {
             //game loop start
             started = true;
             Time.timeScale = 1.0f;
+            options = false;
+            canvasAnim.SetTrigger("optionsClose");
 
         }
     }

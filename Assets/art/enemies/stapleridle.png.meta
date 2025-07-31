@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 29bd30c24b921d14cbbacee1834b6e79
+guid: bf7005e6f3d589a4fb28f3ddddc37137
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -72,7 +72,7 @@ TextureImporter:
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 1
+    textureCompression: 0
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -82,19 +82,6 @@ TextureImporter:
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 3
     buildTarget: Standalone
-    maxTextureSize: 2048
-    resizeAlgorithm: 0
-    textureFormat: -1
-    textureCompression: 1
-    compressionQuality: 50
-    crunchedCompression: 0
-    allowsAlphaSplitting: 0
-    overridden: 0
-    ignorePlatformSupport: 0
-    androidETC2FallbackOverride: 0
-    forceMaximumCompressionQuality_BC6H_BC7: 0
-  - serializedVersion: 3
-    buildTarget: iPhone
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
@@ -119,37 +106,11 @@ TextureImporter:
     ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
-  - serializedVersion: 3
-    buildTarget: Android
-    maxTextureSize: 2048
-    resizeAlgorithm: 0
-    textureFormat: -1
-    textureCompression: 1
-    compressionQuality: 50
-    crunchedCompression: 0
-    allowsAlphaSplitting: 0
-    overridden: 0
-    ignorePlatformSupport: 0
-    androidETC2FallbackOverride: 0
-    forceMaximumCompressionQuality_BC6H_BC7: 0
-  - serializedVersion: 3
-    buildTarget: Windows Store Apps
-    maxTextureSize: 2048
-    resizeAlgorithm: 0
-    textureFormat: -1
-    textureCompression: 1
-    compressionQuality: 50
-    crunchedCompression: 0
-    allowsAlphaSplitting: 0
-    overridden: 0
-    ignorePlatformSupport: 0
-    androidETC2FallbackOverride: 0
-    forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Player Jab 48x48_0
+      name: stapleridle_0
       rect:
         serializedVersion: 2
         x: 0
@@ -163,14 +124,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: ee72822c4697dd14f95ae3b6ac99ee18
-      internalID: 1302728219
+      spriteID: b1ee5c81896ce014d940d0de22b4b0a1
+      internalID: 1624945132
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Player Jab 48x48_1
+      name: stapleridle_1
       rect:
         serializedVersion: 2
         x: 128
@@ -184,14 +145,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: b0ee9070ae85f594d868070591a0fd6b
-      internalID: -2000842587
+      spriteID: 7d571283d99ba3a44aa897dca7ee13ab
+      internalID: 1128206952
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Player Jab 48x48_2
+      name: stapleridle_2
       rect:
         serializedVersion: 2
         x: 256
@@ -205,14 +166,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 6fa1627c78c2cbf41b9db363850e0f28
-      internalID: 744166876
+      spriteID: 7f221cb90e3ab7144ab0c97310a1eed4
+      internalID: -1749454386
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Player Jab 48x48_3
+      name: stapleridle_3
       rect:
         serializedVersion: 2
         x: 384
@@ -226,8 +187,92 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: d51f8bab428f1d6418c5d51ed52490a9
-      internalID: 1473217861
+      spriteID: 9ff1419ceb966c646a029a2bda41aa7b
+      internalID: 1783921288
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stapleridle_4
+      rect:
+        serializedVersion: 2
+        x: 512
+        y: 0
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 097ed8b3e6f3ec745bd6b8979a7b364b
+      internalID: 537667678
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stapleridle_5
+      rect:
+        serializedVersion: 2
+        x: 640
+        y: 0
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6a4d347b247829843b8c4a48c93a5acb
+      internalID: -786458529
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stapleridle_6
+      rect:
+        serializedVersion: 2
+        x: 768
+        y: 0
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 993f27e7df58fc24184df92e4c32ad8b
+      internalID: 457004353
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stapleridle_7
+      rect:
+        serializedVersion: 2
+        x: 896
+        y: 0
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f9003dc3872ee404d8f8a997792b00ae
+      internalID: 165635053
       vertices: []
       indices: 
       edges: []
@@ -243,10 +288,14 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     nameFileIdTable:
-      Player Jab 48x48_0: 1302728219
-      Player Jab 48x48_1: -2000842587
-      Player Jab 48x48_2: 744166876
-      Player Jab 48x48_3: 1473217861
+      stapleridle_0: 1624945132
+      stapleridle_1: 1128206952
+      stapleridle_2: -1749454386
+      stapleridle_3: 1783921288
+      stapleridle_4: 537667678
+      stapleridle_5: -786458529
+      stapleridle_6: 457004353
+      stapleridle_7: 165635053
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
