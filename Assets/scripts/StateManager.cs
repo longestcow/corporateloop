@@ -1,6 +1,9 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Data.Common;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -13,6 +16,7 @@ public class StateManager : MonoBehaviour
     public GameObject pause, keybindsParent;
 
     public KeyCode[] keybinds = {KeyCode.Mouse0, KeyCode.Mouse1, KeyCode.E, KeyCode.Space, KeyCode.A, KeyCode.D, KeyCode.W, KeyCode.Escape};
+    public float playerPunchDmg = 2;
     /*
      * 0 - ability 1
      * 1 - ability 2
@@ -26,9 +30,19 @@ public class StateManager : MonoBehaviour
 
     void Start()
     {
+        print((KeyCode)PlayerPrefs.GetInt("keybind0"));
         StartCoroutine(enablePause());
         canvasAnim.updateMode = AnimatorUpdateMode.UnscaledTime;
         Time.timeScale = 0f; //                                        RPC LOOK AT THIS IF YOURE CONFUSED ABOUT ANYTHING THE GAME IS PAUSED AT THE VERY START ALWAYS
+        for (int i = 0; i < 7; i++)
+        {
+            if (PlayerPrefs.HasKey("keybind" + i))
+            {
+                keybinds[i] = (KeyCode)PlayerPrefs.GetInt("keybind" + i);
+                print(keybinds[i]);
+            }
+            keybindsParent.transform.GetChild(i).GetChild(0).GetComponent<TextMeshProUGUI>().text = getKeyName(keybinds[i]);
+        }
     }
 
     // Update is called once per frame
@@ -41,9 +55,14 @@ public class StateManager : MonoBehaviour
                 if (Input.GetKey(vKey))
                 {
                     keybinds[currKeybindID] = vKey;
-                    keybindsParent.transform.GetChild(currKeybindID).GetChild(0).GetComponent<TextMeshProUGUI>().text = vKey.ToString();
+                    String keybindName = getKeyName(vKey);
+
+                    keybindsParent.transform.GetChild(currKeybindID).GetChild(0).GetComponent<TextMeshProUGUI>().text = keybindName;
                     waitingKeybind = false;
                     currKeybindID = 999;
+                    PlayerPrefs.SetInt("keybind"+currKeybindID, (int)vKey);
+                    print((KeyCode)PlayerPrefs.GetInt("keybind" + currKeybindID));
+                    PlayerPrefs.Save();
                     break;
                 }
 
@@ -101,6 +120,24 @@ public class StateManager : MonoBehaviour
         currKeybindID = id;
         waitingKeybind = true;
 
+    }
+
+    string getKeyName(KeyCode key) {
+        String keybindName = key.ToString();
+        keybindName = keybindName.Replace("Control", "Ctrl");
+        keybindName = keybindName.Replace("Return", "Entr");
+        keybindName = keybindName.Replace("Escape", "Esc");
+        keybindName = keybindName.Replace("Page", "Pg");
+        keybindName = keybindName.Replace("Left", "L");
+        keybindName = keybindName.Replace("Right", "R");
+        keybindName = keybindName.Replace("Up", "U");
+        keybindName = keybindName.Replace("Down", "D");
+        keybindName = keybindName.Replace("Mouse0", "LC");
+        keybindName = keybindName.Replace("Mouse1", "RC");
+        keybindName = keybindName.Replace("Mouse2", "MC");
+        if (keybindName.Length > 4)
+            keybindName = keybindName.Substring(0, 4);
+        return keybindName;
     }
 
     IEnumerator enablePause() {

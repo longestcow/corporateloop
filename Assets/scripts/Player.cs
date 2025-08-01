@@ -33,8 +33,9 @@ public class Player : MonoBehaviour
     public Image[] itemholders;
     int[] itemcooldown = new int[3];
 
-    bool coffemode;
+    bool coffeemode;
     bool steroidmode;
+    bool punchCooldown;
 
     void Start()
     {
@@ -63,27 +64,25 @@ public class Player : MonoBehaviour
     void Update()
     {
         if (!stateManager.started || stateManager.paused) return;
-        if (Input.GetKey(stateManager.keybinds[4]) && Input.GetKey(stateManager.keybinds[5]))
-            input = 0;
-        else if (Input.GetKey(stateManager.keybinds[4]))
-            input = -1;
-        else if (Input.GetKey(stateManager.keybinds[5]))
-            input = 1;
-        else
-            input = 0;
+        input = 0;
+        input += Input.GetKey(stateManager.keybinds[4]) ? -1 : Input.GetKey(stateManager.keybinds[5]) ? 1 : 0;
+
 
         anim.SetBool("running", input != 0);
         bool pointerOverUI = EventSystem.current.IsPointerOverGameObject();
-  
-        if (!pointerOverUI && Input.GetKey(stateManager.keybinds[3])) anim.SetTrigger("jab");
+
+        if (!pointerOverUI && Input.GetKeyDown(stateManager.keybinds[3]) && !punchCooldown)
+            anim.SetTrigger("punch");
+
+
         if (anim.GetCurrentAnimatorClipInfo(0)[0].clip.name.Contains("Punch") || anim.GetCurrentAnimatorClipInfo(0)[0].clip.name.Contains("Jab"))
             input /= 10;
 
         //Cool camera effect
         cam.transform.position = new Vector3(Mathf.Lerp(cam.transform.position.x, input * speed / 10f, 0.01f), cam.transform.position.y, -10);
-        
+
         rb.velocity = new Vector2(input * speed, rb.velocity.y);
-        if (input != 0) sprite.flipX = input < 0;
+        if (input != 0) transform.rotation = Quaternion.Euler(0, input > 0 ? 0 : 180, 0);
 
         //For checking if items are being used
         if (Input.GetKeyDown(stateManager.keybinds[0])) UseItem(0);
@@ -102,9 +101,9 @@ public class Player : MonoBehaviour
         itemcooldown[2]--;
 
         //for making items under cooldown a darker colour
-        itemholders[0].color = (itemcooldown[0] >= 0)? new Color(0.3f, 0.3f, 0.3f, 1) : new Color(1 ,1 ,1 ,1); 
-        itemholders[1].color = (itemcooldown[1] >= 0)? new Color(0.3f, 0.3f, 0.3f, 1) : new Color(1 ,1 ,1 ,1); 
-        itemholders[2].color = (itemcooldown[2] >= 0)? new Color(0.3f, 0.3f, 0.3f, 1) : new Color(1 ,1 ,1 ,1);
+        itemholders[0].color = (itemcooldown[0] >= 0) ? new Color(0.3f, 0.3f, 0.3f, 1) : new Color(1, 1, 1, 1);
+        itemholders[1].color = (itemcooldown[1] >= 0) ? new Color(0.3f, 0.3f, 0.3f, 1) : new Color(1, 1, 1, 1);
+        itemholders[2].color = (itemcooldown[2] >= 0) ? new Color(0.3f, 0.3f, 0.3f, 1) : new Color(1, 1, 1, 1);
 
     }
 
@@ -148,9 +147,9 @@ public class Player : MonoBehaviour
     {
         if (speed == 12) speed = 16;
         if (speed == 8) speed = 12;
-        if (speed == 4) { coffemode = true; speed = 8; }
+        if (speed == 4) { coffeemode = true; speed = 8; }
         yield return new WaitForSeconds(3);
-        if (speed == 8) { coffemode = false; speed = 4; }
+        if (speed == 8) { coffeemode = false; speed = 4; }
         if (speed == 12) speed = 8;
         if (speed == 16) speed = 12;
     }
@@ -168,10 +167,17 @@ public class Player : MonoBehaviour
     }
 
 
-
-
     void Jump()
     {
         rb.velocity = new Vector2(rb.velocity.x, 10f);
     }
+
+    public void Hurt(float dmg)
+    {
+        health -= dmg;
+        print("youch " + dmg);
+    }
+
+
+
 }
