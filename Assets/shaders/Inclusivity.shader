@@ -7,7 +7,7 @@ Shader "Custom/Inclusivity"
         _OriginalBaldColor("Original Bald Color", Color) = (1,1,1,1)
         _TargetColor("Target Color", Color) = (1,1,1,1)
         _BaldColor("Target Bald Color", Color) = (1,1,1,1)
-        _Tolerance("Tolerance", Range(0, 0.01)) = 0.001
+        _Tolerance("Tolerance", Range(0, 1)) = 0.001
     }
 
         SubShader
