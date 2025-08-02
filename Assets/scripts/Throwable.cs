@@ -12,7 +12,8 @@ public class Throwable : MonoBehaviour
     LayerMask layerMask;
     public Collider2D col;
     int throwTimes = -1;
-    int health = 2;
+    public int throwTimesFR = 0;
+    public int health = 4;
     // Start is called before the first frame update
     void Start()
     {
@@ -24,23 +25,20 @@ public class Throwable : MonoBehaviour
     void FixedUpdate()
     {
         grounded = col.IsTouchingLayers(layerMask);
+        if (grounded) active = false;
         rb.velocity = new Vector2(grounded ? rb.velocity.x * 0.8f : rb.velocity.x, rb.velocity.y);
 
         if (grounded && !pGrounded)
         {
 
             throwTimes += 1;
-            if (throwTimes % 2 == 0 && throwTimes!=0)
+            if (throwTimes % 2 == 0 && throwTimes != 0)
             {
                 active = false;
                 enemy = false;
             }
 
-            if (throwTimes >= health * 2)//chair break
-            {
-                Destroy(gameObject, 0.7f);
-            }
-            print("BLAH");
+            
         }
         else if (!grounded && pGrounded)
             active = true;
@@ -48,6 +46,7 @@ public class Throwable : MonoBehaviour
 
         pGrounded = grounded;
     }
+
 }
 
 

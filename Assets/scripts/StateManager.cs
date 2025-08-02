@@ -14,8 +14,8 @@ public class StateManager : MonoBehaviour
     [HideInInspector] public bool started = false, paused = false, options = false, waitingKeybind = false;
     int currKeybindID;
     public GameObject pause, keybindsParent;
-
-    public KeyCode[] keybinds = {KeyCode.Mouse0, KeyCode.Mouse1, KeyCode.E, KeyCode.Space, KeyCode.A, KeyCode.D, KeyCode.W, KeyCode.Escape};
+    public Player player;
+    public KeyCode[] keybinds = { KeyCode.Mouse0, KeyCode.Mouse1, KeyCode.E, KeyCode.Space, KeyCode.A, KeyCode.D, KeyCode.W, KeyCode.Escape };
     public float playerPunchDmg = 2;
     /*
      * 0 - ability 1
@@ -30,13 +30,14 @@ public class StateManager : MonoBehaviour
 
     void Start()
     {
-        print((KeyCode)PlayerPrefs.GetInt("keybind0"));
+        player = GameObject.Find("player").GetComponent<Player>();
         StartCoroutine(enablePause());
         canvasAnim.updateMode = AnimatorUpdateMode.UnscaledTime;
         Time.timeScale = 0f; //                                        RPC LOOK AT THIS IF YOURE CONFUSED ABOUT ANYTHING THE GAME IS PAUSED AT THE VERY START ALWAYS
-        for (int i = 0; i < 7; i++)
+        for (int i = 0; i <= 7; i++)
         {
-            if (PlayerPrefs.HasKey("keybind" + i))
+            print(PlayerPrefs.GetInt("keybind" + i));
+            if (PlayerPrefs.GetInt("keybind" + i) != 0)
             {
                 keybinds[i] = (KeyCode)PlayerPrefs.GetInt("keybind" + i);
                 print(keybinds[i]);
@@ -60,14 +61,15 @@ public class StateManager : MonoBehaviour
                     keybindsParent.transform.GetChild(currKeybindID).GetChild(0).GetComponent<TextMeshProUGUI>().text = keybindName;
                     waitingKeybind = false;
                     currKeybindID = 999;
-                    PlayerPrefs.SetInt("keybind"+currKeybindID, (int)vKey);
+                    
+                    PlayerPrefs.SetInt("keybind" + currKeybindID, (int)vKey);
                     print((KeyCode)PlayerPrefs.GetInt("keybind" + currKeybindID));
                     PlayerPrefs.Save();
                     break;
                 }
 
             }
-		
+
         }
     }
 
@@ -122,7 +124,8 @@ public class StateManager : MonoBehaviour
 
     }
 
-    string getKeyName(KeyCode key) {
+    string getKeyName(KeyCode key)
+    {
         String keybindName = key.ToString();
         keybindName = keybindName.Replace("Control", "Ctrl");
         keybindName = keybindName.Replace("Return", "Entr");
@@ -140,9 +143,22 @@ public class StateManager : MonoBehaviour
         return keybindName;
     }
 
-    IEnumerator enablePause() {
+    IEnumerator enablePause()
+    {
         yield return new WaitForSeconds(0.5f);
         pause.SetActive(true);
+    }
+    IEnumerator HitStun()
+    {
+        //do funny thing with music like hollow knight
+        Time.timeScale = 0f;
+        paused = true;
+        yield return new WaitForSecondsRealtime(0.2f);
+        Time.timeScale = 1;
+        yield return new WaitForSecondsRealtime(0.2f);
+        paused = false;
+
+
     }
 
 }

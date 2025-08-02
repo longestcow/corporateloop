@@ -45,7 +45,7 @@ TextureImporter:
   compressionQuality: 50
   spriteMode: 2
   spriteExtrude: 1
-  spriteMeshType: 1
+  spriteMeshType: 0
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
   spritePixelsToUnits: 46
@@ -106,11 +106,50 @@ TextureImporter:
     ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: iPhone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: Windows Store Apps
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: stapleridle_0
+      name: staplerIdle_0
       rect:
         serializedVersion: 2
         x: 0
@@ -124,14 +163,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: b1ee5c81896ce014d940d0de22b4b0a1
-      internalID: 1624945132
+      spriteID: 1ebcbd60a1b94194c82648f01a8d4c54
+      internalID: -1019927814
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: stapleridle_1
+      name: staplerIdle_1
       rect:
         serializedVersion: 2
         x: 128
@@ -145,14 +184,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 7d571283d99ba3a44aa897dca7ee13ab
-      internalID: 1128206952
+      spriteID: 78682e1b9c0808a49a34b6d9095274d1
+      internalID: -190363145
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: stapleridle_2
+      name: staplerIdle_2
       rect:
         serializedVersion: 2
         x: 256
@@ -166,14 +205,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 7f221cb90e3ab7144ab0c97310a1eed4
-      internalID: -1749454386
+      spriteID: 85ccebaff008a5a42b536bd3c1d2c45f
+      internalID: -187740039
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: stapleridle_3
+      name: staplerIdle_3
       rect:
         serializedVersion: 2
         x: 384
@@ -187,14 +226,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 9ff1419ceb966c646a029a2bda41aa7b
-      internalID: 1783921288
+      spriteID: cafec88d118be1a44b0091633f2b0286
+      internalID: 1427157930
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: stapleridle_4
+      name: staplerIdle_4
       rect:
         serializedVersion: 2
         x: 512
@@ -208,14 +247,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 097ed8b3e6f3ec745bd6b8979a7b364b
-      internalID: 537667678
+      spriteID: 9c9d6c6c1aecf024d8b9a86047be8fd4
+      internalID: -393513727
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: stapleridle_5
+      name: staplerIdle_5
       rect:
         serializedVersion: 2
         x: 640
@@ -229,14 +268,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 6a4d347b247829843b8c4a48c93a5acb
-      internalID: -786458529
+      spriteID: 94c9db20b881e034fbeecbfda337ffa8
+      internalID: 418097407
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: stapleridle_6
+      name: staplerIdle_6
       rect:
         serializedVersion: 2
         x: 768
@@ -250,14 +289,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 993f27e7df58fc24184df92e4c32ad8b
-      internalID: 457004353
+      spriteID: cd56d6b5c0c2c5342bf13b8426e86f15
+      internalID: -1716565624
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: stapleridle_7
+      name: staplerIdle_7
       rect:
         serializedVersion: 2
         x: 896
@@ -271,8 +310,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: f9003dc3872ee404d8f8a997792b00ae
-      internalID: 165635053
+      spriteID: 465b23a0c982d874d8bdbad689edb4f1
+      internalID: -2118456519
       vertices: []
       indices: 
       edges: []
@@ -288,14 +327,14 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     nameFileIdTable:
-      stapleridle_0: 1624945132
-      stapleridle_1: 1128206952
-      stapleridle_2: -1749454386
-      stapleridle_3: 1783921288
-      stapleridle_4: 537667678
-      stapleridle_5: -786458529
-      stapleridle_6: 457004353
-      stapleridle_7: 165635053
+      staplerIdle_0: -1019927814
+      staplerIdle_1: -190363145
+      staplerIdle_2: -187740039
+      staplerIdle_3: 1427157930
+      staplerIdle_4: -393513727
+      staplerIdle_5: 418097407
+      staplerIdle_6: -1716565624
+      staplerIdle_7: -2118456519
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

@@ -70,14 +70,30 @@ public class Brute : MonoBehaviour
         }
         if (state == 3)
         {
+            if (throwable == null)
+            {
+                state = 1;
+                return;
+            }
             float distance = transform.position.x - throwable.position.x; // if positive = throwable to the left, vice versa
             if (Mathf.Abs(distance) > 1.5f)
             {// keep moving closer
-                rb.velocity = new Vector2((distance > 0 ? -1 : 1) * 2, rb.velocity.y);
-                anim.SetBool("running", true);
-                transform.rotation = Quaternion.Euler(0, distance > 0 ? 0 : 180, 0);
+                if (Mathf.Abs(transform.position.x - player.position.x) < 1f && !punchCooldown)
+                {
+                    anim.SetBool("running", false);
+                    anim.SetTrigger("punch");
+                    transform.rotation = Quaternion.Euler(0, (transform.position.x - player.position.x) > 0 ? 0 : 180, 0);
+                    rb.velocity = new Vector2((distance > 0 ? -1 : 1) / 10, rb.velocity.y);
+                    StartCoroutine("PunchTimer");
+                }
+                else
+                {
+                    rb.velocity = new Vector2((distance > 0 ? -1 : 1) * 2, rb.velocity.y);
+                    anim.SetBool("running", true);
+                    transform.rotation = Quaternion.Euler(0, distance > 0 ? 0 : 180, 0);
+                }
             }
-            else if (!anim.GetCurrentAnimatorClipInfo(0)[0].clip.name.Contains("grab") && canGrab)//not already grabbing
+            else if (!anim.GetCurrentAnimatorClipInfo(0)[0].clip.name.Contains("grab") && canGrab && !throwable.GetComponent<Throwable>().active)//not already grabbing
             {
                 anim.SetBool("running", false);
                 throwable.GetComponent<Throwable>().enemy = true;
@@ -103,8 +119,7 @@ public class Brute : MonoBehaviour
     IEnumerator ReleaseThrowable()
     {
         yield return new WaitForSeconds(1f);
-        Rigidbody2D throwRB = throwable.gameObject.GetComponent<Rigidbody2D>(); 
-
+        Rigidbody2D throwRB = throwable.gameObject.GetComponent<Rigidbody2D>();
         float distance = transform.position.x - player.position.x;
         transform.rotation = Quaternion.Euler(0, distance > 0 ? 0 : 180, 0);
         throwable.parent = null;
@@ -115,7 +130,6 @@ public class Brute : MonoBehaviour
         throwRB.velocity = direction*15f;
         state = 1;
         rb.velocity = Vector3.zero;
-
         yield return new WaitForSeconds(3); // cooldown
         canGrab = true;
     }

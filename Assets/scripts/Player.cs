@@ -16,6 +16,7 @@ public class Player : MonoBehaviour
     public float speed;
     public float health = 20;
     public Scrollbar healthbar;
+    public GameObject throwPoint;
     StateManager stateManager;
     int[] items = new int[3];
     /*
@@ -23,7 +24,7 @@ public class Player : MonoBehaviour
      * 1 - coffee - implemented
      * 2 - drug
      * 3 - pen
-     * 4 - strength
+     * 4 - strength - implemented
      * 5 - jump - implemented
      * 6 - stick
      * 7 - scissor
@@ -36,12 +37,17 @@ public class Player : MonoBehaviour
     bool coffeemode;
     bool steroidmode;
     bool punchCooldown;
+    bool grabbing = false;
+    public bool iframe = false, dead = false;
+    int groundLayer;
+
+    [HideInInspector] public Throwable throwable = null;
 
     void Start()
     {
         items[0] = 1;
         items[1] = 5;
-        items[2] = 1;
+        items[2] = 4;
         itemcooldown[0] = -1;
         itemcooldown[1] = -1;
         itemcooldown[2] = -1;
@@ -51,11 +57,14 @@ public class Player : MonoBehaviour
         col = this.gameObject.GetComponent<Collider2D>();
         cam = Camera.main;
         stateManager = GameObject.Find("StateManager").GetComponent<StateManager>();
+        groundLayer = LayerMask.GetMask("Floor");
         Restart();
     }
 
     void Restart() //called after you die and restart from the beginning of the level, don't restart scene
     {
+        dead = false;
+        anim.SetBool("dead", false);
         itemholders[0].sprite = itemsprites[items[0]];
         itemholders[1].sprite = itemsprites[items[1]];
         itemholders[2].sprite = itemsprites[items[2]];
@@ -63,15 +72,17 @@ public class Player : MonoBehaviour
 
     void Update()
     {
-        if (!stateManager.started || stateManager.paused) return;
         input = 0;
         input += Input.GetKey(stateManager.keybinds[4]) ? -1 : Input.GetKey(stateManager.keybinds[5]) ? 1 : 0;
+        if (input != 0) transform.rotation = Quaternion.Euler(0, input > 0 ? 0 : 180, 0);
+
+        if (!stateManager.started || stateManager.paused || iframe || dead || grabbing) return;
 
 
         anim.SetBool("running", input != 0);
         bool pointerOverUI = EventSystem.current.IsPointerOverGameObject();
 
-        if (!pointerOverUI && Input.GetKeyDown(stateManager.keybinds[3]) && !punchCooldown)
+        if (!pointerOverUI && Input.GetKeyDown(stateManager.keybinds[3]) && !punchCooldown && col.IsTouchingLayers(groundLayer))
             anim.SetTrigger("punch");
 
 
@@ -82,7 +93,6 @@ public class Player : MonoBehaviour
         cam.transform.position = new Vector3(Mathf.Lerp(cam.transform.position.x, input * speed / 10f, 0.01f), cam.transform.position.y, -10);
 
         rb.velocity = new Vector2(input * speed, rb.velocity.y);
-        if (input != 0) transform.rotation = Quaternion.Euler(0, input > 0 ? 0 : 180, 0);
 
         //For checking if items are being used
         if (Input.GetKeyDown(stateManager.keybinds[0])) UseItem(0);
@@ -130,12 +140,17 @@ public class Player : MonoBehaviour
         }
 
 
+        if (items[outofthree] == 4)
+        {
+            Grab();
+            //no cooldown
+        }
 
         if (items[outofthree] == 5)
-        {
-            Jump();
-            itemcooldown[outofthree] = 2 * 60;
-        }
+            {
+                Jump();
+                itemcooldown[outofthree] = 2 * 60;
+            }
     }
 
     void Coffee()
@@ -170,12 +185,112 @@ public class Player : MonoBehaviour
     void Jump()
     {
         rb.velocity = new Vector2(rb.velocity.x, 10f);
+        anim.SetTrigger("jump");
     }
 
-    public void Hurt(float dmg)
+    void Grab()
+    {
+        if (throwable == null)
+            return;
+        if (throwable.active) return;
+        rb.velocity = Vector2.zero;
+        grabbing = true;
+        throwable.enemy = false;
+        throwable.transform.parent = throwPoint.transform;
+        throwable.transform.localPosition = Vector3.zero;
+        throwable.gameObject.GetComponent<Rigidbody2D>().gravityScale = 0;
+        anim.SetTrigger("grab");
+        StartCoroutine("ReleaseThrowable");
+    }
+
+    public void GrabUtil(bool near)
+    {
+        if (items[0] == 4)
+        {
+            if (near)
+                itemholders[0].transform.localScale = new Vector3(1.2f, 1.2f, 0);
+            else
+                itemholders[0].transform.localScale = new Vector3(1, 1, 0);
+        }
+        if (items[1] == 4)
+        {
+            if (near)
+                itemholders[1].transform.localScale = new Vector3(1.2f, 1.2f, 0);
+            else
+                itemholders[1].transform.localScale = new Vector3(1, 1, 0);
+        }
+        if (items[2] == 4)
+        {
+            if (near)
+                itemholders[2].transform.localScale = new Vector3(1.2f, 1.2f, 0);
+            else
+                itemholders[2].transform.localScale = new Vector3(1, 1, 0);
+        }
+        
+    }
+
+    IEnumerator ReleaseThrowable()
+    {
+        yield return new WaitForSeconds(1f);
+        if (throwable == null)
+        {
+            grabbing = false;
+            yield break;
+        }
+        Rigidbody2D throwRB = throwable.gameObject.GetComponent<Rigidbody2D>();
+        throwable.transform.parent = null;
+        throwRB.gravityScale = 1;
+        Vector2 direction = Vector2.right * (transform.rotation.y == 0 ? 1 : -1);
+        direction += Vector2.up * 0.1f;
+        direction = direction.normalized;
+        throwRB.velocity = direction * 10f;
+        rb.velocity = Vector3.zero;
+        grabbing = false;
+
+
+    }
+
+    public void Hurt(float dmg, int id)
     {
         health -= dmg;
-        print("youch " + dmg);
+
+        if (health <= 0)
+        {
+            rb.velocity = Vector2.zero;
+            anim.SetBool("dead", true);
+            dead = true;
+            //AddItem                 ------------------------------------------------------------- RPC idk how the indexing works so you can do this
+            if (id == 0 || id == 1 || id == 3 || id == 4)
+            {
+                anim.SetTrigger("basicDead");
+            }
+            else if (id == 2)
+                anim.SetTrigger("slip");
+            else // need to add jump off and elevator
+                anim.SetTrigger("basicDead");
+        }
+        else if (id == 2)
+        {
+            anim.SetTrigger("slip");
+            StartCoroutine(Slip());
+        }
+        // ids
+        // 0 throwable
+        // 1 brute
+        // 2 slip
+        // 3 staple
+
+
+    }
+    public IEnumerator Slip()
+    {
+        yield return new WaitForSeconds(0.1f);
+        rb.velocity = Vector2.zero;
+        sprite.color = new Color(0.9f, 0.9f, 0.9f);
+        iframe = true;
+        yield return new WaitForSeconds(1.5f);
+        sprite.color = new Color(1, 1, 1);
+        iframe = false;
     }
 
 

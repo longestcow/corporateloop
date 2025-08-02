@@ -8,7 +8,6 @@ public class enemyHurtbox : MonoBehaviour
     public float health;
     StateManager stateManager;
     Animator anim;
-    bool dead = false;
     void Start()
     {
         stateManager = GameObject.Find("StateManager").GetComponent<StateManager>();
@@ -18,12 +17,18 @@ public class enemyHurtbox : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.gameObject.name != "hitbox" || dead) return;
+        if (collision.gameObject.name != "hitbox") return;
         if (collision.gameObject.layer == 7)//throwable
         {
             Throwable throwable = collision.transform.GetComponentInParent<Throwable>();
             if (!throwable.grounded && throwable.active && !throwable.enemy)
-                Hurt(4);
+            {
+                Hurt(10);
+                throwable.throwTimesFR += 1;
+
+            }
+            if (throwable.throwTimesFR >= throwable.health)
+                    Destroy(throwable.transform.gameObject);
         }
         if (collision.gameObject.layer == 3)//player punch
         {
@@ -35,8 +40,11 @@ public class enemyHurtbox : MonoBehaviour
         if (health <= 0)
         {
             anim.SetTrigger("dead");
-            dead = true;
             Destroy(transform.parent.gameObject, 2.5f); // die after 2.5s
+            foreach (Transform child in transform.parent)
+            {
+                Destroy(child.gameObject);
+            }
         }
     }
 
@@ -44,20 +52,9 @@ public class enemyHurtbox : MonoBehaviour
     {
         health -= dmg;
         print("mouch " + dmg);
-        StartCoroutine("HitStun");
+        stateManager.StartCoroutine("HitStun");
         //flash colour
     }
 
-    IEnumerator HitStun()
-    {
-        //do funny thing with music like hollow knight
-        Time.timeScale = 0.1f;
-        stateManager.paused = true;
-        yield return new WaitForSecondsRealtime(0.3f);
-        Time.timeScale = 1;
-        yield return new WaitForSecondsRealtime(0.2f);
-        stateManager.paused = false;
 
-
-    }
 }
