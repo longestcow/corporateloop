@@ -25,7 +25,7 @@ public class Brute : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
-        if (anim.GetCurrentAnimatorClipInfo(0)[0].clip.name.Contains("Dead")) return; //dudes dead, waiting to get destroyed now
+        if (anim.GetCurrentAnimatorClipInfo(0)[0].clip.name.Contains("Dead")) { if (throwable != null) throwable.parent = null; return; } //dudes dead, waiting to get destroyed now
         if (state == 0) // look for player
         {
             RaycastHit2D playerHit = Physics2D.Raycast(new Vector2(10, transform.position.y), Vector2.left, 20, LayerMask.GetMask("Player"));

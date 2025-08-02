@@ -17,7 +17,7 @@ public class enemyHurtbox : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.gameObject.name != "hitbox") return;
+        if (!collision.gameObject.name.Contains("hitbox")) return;
         if (collision.gameObject.layer == 7)//throwable
         {
             Throwable throwable = collision.transform.GetComponentInParent<Throwable>();
@@ -27,8 +27,16 @@ public class enemyHurtbox : MonoBehaviour
                 throwable.throwTimesFR += 1;
 
             }
-            if (throwable.throwTimesFR >= throwable.health)
-                    Destroy(throwable.transform.gameObject);
+            //if (throwable.throwTimesFR >= throwable.health)
+                    //Destroy(throwable.transform.gameObject);
+        }
+        if (collision.gameObject.layer == 12)//pen
+        {
+            if (collision.gameObject.transform.parent.gameObject.GetComponent<Rigidbody2D>().velocity.magnitude > 1)
+            {
+                collision.gameObject.transform.parent.gameObject.GetComponent<Rigidbody2D>().velocity = Vector2.zero;
+                Hurt(20);
+            }
         }
         if (collision.gameObject.layer == 3)//player punch
         {
@@ -52,6 +60,9 @@ public class enemyHurtbox : MonoBehaviour
     {
         health -= dmg;
         print("mouch " + dmg);
+        if (health <= 0)
+        stateManager.StartCoroutine("CoolHitStun");
+        else
         stateManager.StartCoroutine("HitStun");
         //flash colour
     }

@@ -7,14 +7,18 @@ using UnityEngine.EventSystems;
 
 public class Player : MonoBehaviour
 {
+    public static int runcount;
     Camera cam;
     Rigidbody2D rb;
     Collider2D col;
     Animator anim;
     SpriteRenderer sprite;
+    public SpriteRenderer darkness;
     float input;
     public float speed;
-    public float health = 20;
+    public float strength;
+    public float health = 10;
+    public float maxhealth = 10;
     public Scrollbar healthbar;
     public GameObject throwPoint;
     StateManager stateManager;
@@ -22,13 +26,13 @@ public class Player : MonoBehaviour
     /*
      * 0 - nothing
      * 1 - coffee - implemented
-     * 2 - drug
-     * 3 - pen
-     * 4 - strength - implemented
-     * 5 - jump - implemented
+     * 2 - drug - implemented - obtainable
+     * 3 - pen - implemented - obtainable
+     * 4 - strength - implemented - obtainable
+     * 5 - jump - implemented - obtainable
      * 6 - stick
      * 7 - scissor
-     * 8 - slam
+     * 8 - slam - implemented (kinda)
     */
     public Sprite[] itemsprites;
     public Image[] itemholders;
@@ -43,11 +47,27 @@ public class Player : MonoBehaviour
 
     [HideInInspector] public Throwable throwable = null;
 
+    public GameObject pen;
+    public bool haspen;
+    public int pencount;
+
+    public GameObject slampng;
+    public GameObject exclam;
+
+    public bool nextrooming;
+    public bool nextroomed;
+    public static bool startedelevator;
+    public bool inelevator;
+    public bool stuckinelevator;
+    public bool fallingelevator;
+    float elevatorspeed;
+
     void Start()
     {
+        runcount = 0;
         items[0] = 1;
-        items[1] = 5;
-        items[2] = 4;
+        items[1] = 0;
+        items[2] = 0;
         itemcooldown[0] = -1;
         itemcooldown[1] = -1;
         itemcooldown[2] = -1;
@@ -63,20 +83,38 @@ public class Player : MonoBehaviour
 
     void Restart() //called after you die and restart from the beginning of the level, don't restart scene
     {
+        runcount++;
         dead = false;
         anim.SetBool("dead", false);
         itemholders[0].sprite = itemsprites[items[0]];
         itemholders[1].sprite = itemsprites[items[1]];
         itemholders[2].sprite = itemsprites[items[2]];
+        pencount = 0;
+        if (items[0] == 3) pencount++;
+        if (items[1] == 3) pencount++;
+        if (items[2] == 3) pencount++;
+        health = maxhealth;
+        transform.position = new Vector3(-5,-2,0);
+        sprite.color = new Color(1, 1, 1, 1);
     }
 
     void Update()
     {
+        if (Input.GetKeyDown(KeyCode.R)) Restart();
+
+        if (inelevator || stuckinelevator || fallingelevator) return;
+
+        if (StateManager.coolstun) sprite.color = new Color(0, 0, 0, 1);
+        else sprite.color = new Color(1, 1, 1, sprite.color.a);
+
         input = 0;
         input += Input.GetKey(stateManager.keybinds[4]) ? -1 : Input.GetKey(stateManager.keybinds[5]) ? 1 : 0;
         if (input != 0) transform.rotation = Quaternion.Euler(0, input > 0 ? 0 : 180, 0);
 
-        if (!stateManager.started || stateManager.paused || iframe || dead || grabbing) return;
+
+        cam.transform.position = new Vector3(Mathf.Lerp(cam.transform.position.x, input * speed / 10f, 0.01f), Mathf.Lerp(cam.transform.position.y, 7 * Mathf.Round(transform.transform.position.y/7), 0.01f), -10);
+
+        if (!stateManager.started || stateManager.paused || iframe || dead || grabbing || nextrooming || nextroomed) return;
 
 
         anim.SetBool("running", input != 0);
@@ -89,9 +127,6 @@ public class Player : MonoBehaviour
         if (anim.GetCurrentAnimatorClipInfo(0)[0].clip.name.Contains("Punch") || anim.GetCurrentAnimatorClipInfo(0)[0].clip.name.Contains("Jab"))
             input /= 10;
 
-        //Cool camera effect
-        cam.transform.position = new Vector3(Mathf.Lerp(cam.transform.position.x, input * speed / 10f, 0.01f), cam.transform.position.y, -10);
-
         rb.velocity = new Vector2(input * speed, rb.velocity.y);
 
         //For checking if items are being used
@@ -99,8 +134,17 @@ public class Player : MonoBehaviour
         if (Input.GetKeyDown(stateManager.keybinds[1])) UseItem(1);
         if (Input.GetKeyDown(stateManager.keybinds[2])) UseItem(2);
 
-        //Sets healthbar size
-        healthbar.size = (health / 20f);
+        //Room exit
+        if (col.IsTouchingLayers(LayerMask.GetMask("exit")) && Input.GetKeyDown(stateManager.keybinds[6]))
+        {
+            StartCoroutine("NextRoom");
+        }
+
+        //Elevator
+        if (col.IsTouchingLayers(LayerMask.GetMask("elevator")) && Input.GetKeyDown(stateManager.keybinds[6]))
+        {
+            StartCoroutine("Elevator");
+        }
     }
 
     private void FixedUpdate()
@@ -115,6 +159,29 @@ public class Player : MonoBehaviour
         itemholders[1].color = (itemcooldown[1] >= 0) ? new Color(0.3f, 0.3f, 0.3f, 1) : new Color(1, 1, 1, 1);
         itemholders[2].color = (itemcooldown[2] >= 0) ? new Color(0.3f, 0.3f, 0.3f, 1) : new Color(1, 1, 1, 1);
 
+        if (items[0] == 3 && itemcooldown[0] < 0) itemholders[0].color = (pencount <= 0) ? new Color(0.3f, 0.3f, 0.3f, 1) : new Color(1, 1, 1, 1);
+        if (items[1] == 3 && itemcooldown[1] < 0) itemholders[1].color = (pencount <= 0) ? new Color(0.3f, 0.3f, 0.3f, 1) : new Color(1, 1, 1, 1);
+        if (items[2] == 3 && itemcooldown[2] < 0) itemholders[2].color = (pencount <= 0) ? new Color(0.3f, 0.3f, 0.3f, 1) : new Color(1, 1, 1, 1);
+
+        if (nextrooming) sprite.color = new Color(1,1,1, sprite.color.a - (1f / 60f));
+        else if (nextroomed) sprite.color = new Color(1, 1, 1, sprite.color.a + (1f / 60f));
+        
+        if (!dead) darkness.color = new Color(0, 0, 0, Mathf.Clamp01(darkness.color.a - (1f / 60f)));
+        else if (dead) darkness.color = new Color(0, 0, 0, Mathf.Clamp01(darkness.color.a + (1f / 60f)));
+
+        if (inelevator) { cam.transform.position = new Vector3(0, cam.transform.position.y + elevatorspeed, -10); elevatorspeed *= 0.99f; }
+        if (stuckinelevator) cam.transform.position = new Vector3(0, cam.transform.position.y, -10);
+        if (fallingelevator) { cam.transform.position = new Vector3(Random.Range(-0.5f, 0.5f), cam.transform.position.y - elevatorspeed, -10); elevatorspeed += 0.025f; }
+
+
+        if ((col.IsTouchingLayers(LayerMask.GetMask("exit")) && !nextroomed && !nextrooming) || (col.IsTouchingLayers(LayerMask.GetMask("elevator")) && (!inelevator && !stuckinelevator && !fallingelevator)))
+        {
+            exclam.SetActive(true);
+        }
+        else
+        {
+            exclam.SetActive(false);
+        }
     }
 
     void AddItem(int itemid) //call with id of the item to add 
@@ -138,19 +205,28 @@ public class Player : MonoBehaviour
             Steroid();
             itemcooldown[outofthree] = 5 * 60;
         }
-
-
+        if (items[outofthree] == 3)
+        {
+            PenThrow();
+            itemcooldown[outofthree] = 8 * 60;
+        }
         if (items[outofthree] == 4)
         {
             Grab();
             //no cooldown
         }
-
         if (items[outofthree] == 5)
-            {
-                Jump();
-                itemcooldown[outofthree] = 2 * 60;
-            }
+        {
+            Jump();
+            itemcooldown[outofthree] = 2 * 60;
+        }
+
+
+        if (items[outofthree] == 8)
+        {
+            Slam();
+            itemcooldown[outofthree] = 4 * 60;
+        }
     }
 
     void Coffee()
@@ -176,16 +252,22 @@ public class Player : MonoBehaviour
 
     IEnumerator SteroidTimer()
     {
-        steroidmode = true;
+        if (stateManager.playerPunchDmg == 24) stateManager.playerPunchDmg = 72;
+        if (stateManager.playerPunchDmg == 8) stateManager.playerPunchDmg = 24;
+        if (stateManager.playerPunchDmg == 2) { steroidmode = true; stateManager.playerPunchDmg = 8; }
         yield return new WaitForSeconds(3);
-        steroidmode = false;
+        if (stateManager.playerPunchDmg == 8) { steroidmode = false; stateManager.playerPunchDmg = 2; }
+        if (stateManager.playerPunchDmg == 24) stateManager.playerPunchDmg = 8;
+        if (stateManager.playerPunchDmg == 72) stateManager.playerPunchDmg = 24;
     }
 
-
-    void Jump()
+    void PenThrow()
     {
-        rb.velocity = new Vector2(rb.velocity.x, 10f);
-        anim.SetTrigger("jump");
+        if (pencount > 0)
+        {
+            Instantiate(pen, this.transform.position, this.transform.rotation, null);
+            pencount--;
+        }
     }
 
     void Grab()
@@ -249,6 +331,21 @@ public class Player : MonoBehaviour
 
 
     }
+    void Jump()
+    {
+        rb.velocity = new Vector2(rb.velocity.x, 10f);
+        anim.SetTrigger("jump");
+    }
+
+
+    void Slam()
+    {
+        rb.velocity = new Vector2(rb.velocity.x, 1f);
+        //anim.SetTrigger("slam"); you make this
+        Instantiate(slampng, this.transform.position, Quaternion.Euler(this.transform.rotation.eulerAngles.x, 0, this.transform.rotation.eulerAngles.z), null);
+        Instantiate(slampng, this.transform.position, Quaternion.Euler(this.transform.rotation.eulerAngles.x, 180, this.transform.rotation.eulerAngles.z), null);
+        pencount--;
+    }
 
     public void Hurt(float dmg, int id)
     {
@@ -259,15 +356,43 @@ public class Player : MonoBehaviour
             rb.velocity = Vector2.zero;
             anim.SetBool("dead", true);
             dead = true;
-            //AddItem                 ------------------------------------------------------------- RPC idk how the indexing works so you can do this
-            if (id == 0 || id == 1 || id == 3 || id == 4)
+            StartCoroutine("death");
+            if (id == 0)
+            {
+                anim.SetTrigger("basicDead");
+                AddItem(4);
+            }
+            if (id == 1)
+            {
+                anim.SetTrigger("basicDead");
+                AddItem(2);
+            }
+            if (id == 2)
+            {
+                anim.SetTrigger("slip");
+                AddItem(5);
+            }
+            if (id == 3)
+            {
+                anim.SetTrigger("basicDead");
+                AddItem(3);
+            }
+            if (id == 4)
             {
                 anim.SetTrigger("basicDead");
             }
-            else if (id == 2)
-                anim.SetTrigger("slip");
-            else // need to add jump off and elevator
+            if (id == 5)
+            {
                 anim.SetTrigger("basicDead");
+            }
+            if (id == 6)
+            {
+                anim.SetTrigger("basicDead");
+            }
+            else // need to add jump off and elevator
+            { 
+                anim.SetTrigger("basicDead");
+            }
         }
         else if (id == 2)
         {
@@ -279,6 +404,9 @@ public class Player : MonoBehaviour
         // 1 brute
         // 2 slip
         // 3 staple
+        // 4 paper
+        // 5 jump off
+        // 6 elevator
 
 
     }
@@ -293,6 +421,49 @@ public class Player : MonoBehaviour
         iframe = false;
     }
 
+    public IEnumerator NextRoom()
+    {
+        nextrooming = true;
+        rb.velocity = Vector2.zero;
+        anim.SetBool("running", false);
+        yield return new WaitForSeconds(1);
+        nextrooming = false;
+        nextroomed = true;
+        transform.position = transform.position + new Vector3(0,7,0);
+        yield return new WaitForSeconds(1);
+        nextroomed = false;
+    }
+    public IEnumerator Elevator()
+    {
+        nextroomed = true;
+        startedelevator = true;
+        rb.velocity = Vector2.zero;
+        anim.SetBool("running", false);
+        yield return new WaitForSeconds(2);
+        inelevator = true;
+        nextroomed = false;
+        elevatorspeed = 0.1f;
+        this.gameObject.GetComponent<SpriteRenderer>().color = new Color(0, 0, 0, 0);
+        yield return new WaitForSeconds(2);
+        inelevator = false;
+        stuckinelevator = true;
+        yield return new WaitForSeconds(0.5f);
+        stuckinelevator = false;
+        fallingelevator = true;
+        elevatorspeed = 0.5f;
+        yield return new WaitForSeconds(1);
+        dead = true;
+        AddItem(8);
+        StartCoroutine("death");
+        health = 0;
+        yield return new WaitForSeconds(1);
+        fallingelevator = false;
+    }
 
+    public IEnumerator death()
+    {
+        yield return new WaitForSeconds(2);
+        Restart();
+    }
 
 }

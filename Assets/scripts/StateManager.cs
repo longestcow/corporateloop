@@ -27,9 +27,11 @@ public class StateManager : MonoBehaviour
      * 6 - interact  
      * 7 - pause (not implemented yet)
      */
+    public static bool coolstun;
 
     void Start()
     {
+        coolstun = false;
         player = GameObject.Find("player").GetComponent<Player>();
         StartCoroutine(enablePause());
         canvasAnim.updateMode = AnimatorUpdateMode.UnscaledTime;
@@ -157,8 +159,20 @@ public class StateManager : MonoBehaviour
         Time.timeScale = 1;
         yield return new WaitForSecondsRealtime(0.2f);
         paused = false;
+    }
 
 
+    IEnumerator CoolHitStun()
+    {
+        //do funny thing with music like hollow knight
+        Time.timeScale = 0f;
+        paused = true;
+        coolstun = true;
+        yield return new WaitForSecondsRealtime(0.5f);
+        Time.timeScale = 1;
+        coolstun = false;
+        yield return new WaitForSecondsRealtime(0.2f);
+        paused = false;
     }
 
 }

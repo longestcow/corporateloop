@@ -10,6 +10,12 @@ public class playerHurtbox : MonoBehaviour
         player = GetComponentInParent<Player>();
     }
 
+    private void FixedUpdate()
+    {
+
+        //Sets healthbar size
+        player.healthbar.size = 1 - Mathf.Clamp01((player.health / player.maxhealth));
+    }
 
     void OnTriggerEnter2D(Collider2D collision)
     {
@@ -51,15 +57,24 @@ public class playerHurtbox : MonoBehaviour
             player.Hurt(3f, 3);
             Destroy(collision.gameObject);
         }
-        if (collision.gameObject.layer == 12)// papered
+        if (collision.gameObject.layer == 12)//pen pickup
+        {
+            if (collision.gameObject.transform.parent.gameObject.GetComponent<Rigidbody2D>().velocity.magnitude <= 1f)
+            {
+                player.pencount++;
+                Destroy(collision.transform.parent.gameObject);
+            }
+
+        }
+        if (collision.gameObject.layer == 15)// papered
         {
             player.Hurt(4f, 4);
         }
-        if (collision.gameObject.layer == 13)// jump off
+        if (collision.gameObject.layer == 16)// jump off
         {
             player.Hurt(1000f, 5);
         }
-        if (collision.gameObject.layer == 14) // elevator
+        if (collision.gameObject.layer == 17) // elevator
         {
             player.Hurt(1000f, 6);
         }

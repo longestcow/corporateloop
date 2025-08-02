@@ -8,6 +8,7 @@ Shader "Custom/Inclusivity"
         _TargetColor("Target Color", Color) = (1,1,1,1)
         _BaldColor("Target Bald Color", Color) = (1,1,1,1)
         _Tolerance("Tolerance", Range(0, 1)) = 0.001
+        _CoolStun("Cool Hit Stun", Range(0, 1)) = 0
     }
 
         SubShader
@@ -43,6 +44,7 @@ Shader "Custom/Inclusivity"
                 float4 _OriginalBaldColor;
                 float4 _BaldColor;
                 float _Tolerance;
+                float _CoolStun;
 
                 v2f vert(appdata v)
                 {
@@ -59,6 +61,11 @@ Shader "Custom/Inclusivity"
                     if (col.a == 0)
                     {
                         return half4(0, 0, 0, 0);
+                    }
+
+                    if (_CoolStun == 1) 
+                    {
+                        return half4(0, 0, 0, 1);
                     }
 
                     if (length(col - _OriginalColor) < _Tolerance)
