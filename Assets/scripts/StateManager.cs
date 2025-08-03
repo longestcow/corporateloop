@@ -60,31 +60,35 @@ public class StateManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (waitingKeybind)
+        if (Input.GetKeyDown(keybinds[7]))
         {
-            foreach (KeyCode vKey in System.Enum.GetValues(typeof(KeyCode)))
+            Pause();
+        }
+        if (waitingKeybind)
             {
-                if (Input.GetKey(vKey))
+                foreach (KeyCode vKey in System.Enum.GetValues(typeof(KeyCode)))
                 {
-                    keybinds[currKeybindID] = vKey;
-                    String keybindName = getKeyName(vKey);
+                    if (Input.GetKey(vKey))
+                    {
+                        keybinds[currKeybindID] = vKey;
+                        String keybindName = getKeyName(vKey);
 
-                    keybindsParent.transform.GetChild(currKeybindID).GetChild(0).GetComponent<TextMeshProUGUI>().text = keybindName;
-                    waitingKeybind = false;
+                        keybindsParent.transform.GetChild(currKeybindID).GetChild(0).GetComponent<TextMeshProUGUI>().text = keybindName;
+                        waitingKeybind = false;
 
-                    PlayerPrefs.SetInt("keybind" + currKeybindID, (int)vKey);
-                    print((KeyCode)PlayerPrefs.GetInt("keybind" + currKeybindID));
-                    PlayerPrefs.Save();
-                    currKeybindID = 999;
+                        PlayerPrefs.SetInt("keybind" + currKeybindID, (int)vKey);
+                        print((KeyCode)PlayerPrefs.GetInt("keybind" + currKeybindID));
+                        PlayerPrefs.Save();
+                        currKeybindID = 999;
 
-                    SetDescriptions();
+                        SetDescriptions();
 
-                    break;
+                        break;
+                    }
+
                 }
 
             }
-
-        }
     }
 
     void LateUpdate()
