@@ -61,9 +61,13 @@ public class Janitor : MonoBehaviour
             anim.SetBool("running", false);
             rb.velocity = new Vector2(0, rb.velocity.y);
             yield return new WaitForSeconds(1);
-            if (GameObject.FindGameObjectsWithTag("water").Length < 2)
+            RaycastHit2D playerHit = Physics2D.Raycast(new Vector2(10, transform.position.y), Vector2.left, 20, LayerMask.GetMask("Player"));
+
+            if (GameObject.FindGameObjectsWithTag("water").Length < 2 && playerHit.collider!=null)
             {
-                if (cycleSinceWater > 0 && Random.value < 0.5f)
+                if (GameObject.FindGameObjectsWithTag("water").Length == 0 && Random.value < 0.8f)
+                    state = 2;
+                else if (cycleSinceWater > 0 && Random.value < 0.5f)
                     state = 2;
                 else if (cycleSinceWater > 2)
                     state = 2;
@@ -72,7 +76,8 @@ public class Janitor : MonoBehaviour
             }
             else
                 state = 1;
-            cycleSinceWater += 1;
+            if(playerHit.collider!=null)
+                cycleSinceWater += 1;
         }
         if (state == 1)
         {
@@ -90,6 +95,7 @@ public class Janitor : MonoBehaviour
         {
             anim.SetTrigger("sweep");
             yield return new WaitForSeconds(0.2f);
+            if (water == null || sweepSpot==null) yield break;
             GameObject obj = Instantiate(water, sweepSpot.transform);
             obj.transform.parent = null;
             yield return new WaitForSeconds(1.5f);

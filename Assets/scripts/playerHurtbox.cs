@@ -19,7 +19,7 @@ public class playerHurtbox : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D collision)
     {
-        if (player.iframe || player.dead) return;
+        if (player.iframe || player.dead || player.coffeemode) return;
         if (collision.gameObject.layer == 7 && collision.gameObject.name == "interactZone")
         {
             player.GrabUtil(true);
@@ -35,10 +35,10 @@ public class playerHurtbox : MonoBehaviour
             if (!throwable.grounded && throwable.active && throwable.enemy)
             {
                 player.Hurt(4f, 0);
-                throwable.throwTimesFR += 1;
+                // throwable.throwTimesFR += 1;
             }
-            if (throwable.throwTimesFR >= throwable.health)
-                    Destroy(throwable.transform.gameObject);
+            // if (throwable.throwTimesFR >= throwable.health)
+            //         Destroy(throwable.transform.gameObject);
         }
         if (collision.gameObject.layer == 6)//brute
         {
@@ -47,14 +47,14 @@ public class playerHurtbox : MonoBehaviour
         if (collision.gameObject.layer == 10)//water
         {
             //slip animation
-            player.Hurt(2f, 2);
+            player.Hurt(3f, 2);
             player.Slip();
             Destroy(collision.gameObject, 0.5f);
 
         }
         if (collision.gameObject.layer == 11)//staple
         {
-            player.Hurt(3f, 3);
+            player.Hurt(1f, 3);
             Destroy(collision.gameObject);
         }
         if (collision.gameObject.layer == 12)//pen pickup
@@ -77,6 +77,10 @@ public class playerHurtbox : MonoBehaviour
         if (collision.gameObject.layer == 17) // elevator
         {
             player.Hurt(1000f, 6);
+        }
+        if (collision.gameObject.layer == 17) // bomb
+        {
+            player.Hurt(5f, 7);
         }
 
     }

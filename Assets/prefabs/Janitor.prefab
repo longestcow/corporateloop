@@ -168,6 +168,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   health: 10
+  sprite: {fileID: 0}
+  ogMat: {fileID: 0}
 --- !u!1 &5155465724152786607
 GameObject:
   m_ObjectHideFlags: 0

@@ -11,7 +11,8 @@ public class Brute : MonoBehaviour
     // 3 throwable, go to throwable
     // 4 grab and throw
     Animator anim;
-    Transform player, throwable;
+    Transform player;
+    Throwable throwable;
     Rigidbody2D rb;
     bool punchCooldown = false, canGrab=true;
     public GameObject grabPoint;
@@ -25,7 +26,7 @@ public class Brute : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
-        if (anim.GetCurrentAnimatorClipInfo(0)[0].clip.name.Contains("Dead")) { if (throwable != null) throwable.parent = null; return; } //dudes dead, waiting to get destroyed now
+        if (anim.GetCurrentAnimatorClipInfo(0)[0].clip.name.Contains("Dead")) { if (throwable != null) throwable.transform.parent = null; return; } //dudes dead, waiting to get destroyed now
         if (state == 0) // look for player
         {
             RaycastHit2D playerHit = Physics2D.Raycast(new Vector2(10, transform.position.y), Vector2.left, 20, LayerMask.GetMask("Player"));
@@ -43,13 +44,20 @@ public class Brute : MonoBehaviour
             if (throwableHit.collider != null)
             {
                 state = 3;
-                throwable = throwableHit.collider.gameObject.transform.root;
+                throwable = throwableHit.collider.gameObject.GetComponentInParent<Throwable>();
             }
             else
                 state = 2;
         }
         if (state == 2)
         {
+            bool pl = Mathf.Round(player.transform.position.y / 7) != Mathf.Round(transform.position.y / 7);
+            if (pl)
+            {
+                state = 0;
+                player = null;
+                return;
+            }
             float distance = transform.position.x - player.position.x; // if positive = player to the left, vice versa
             if (Mathf.Abs(distance) > 1.5f)
             {// keep moving closer
@@ -67,6 +75,7 @@ public class Brute : MonoBehaviour
             else
                 anim.SetBool("running", false);
 
+
         }
         if (state == 3)
         {
@@ -75,7 +84,14 @@ public class Brute : MonoBehaviour
                 state = 1;
                 return;
             }
-            float distance = transform.position.x - throwable.position.x; // if positive = throwable to the left, vice versa
+            bool pl = Mathf.Round(player.transform.position.y / 7) != Mathf.Round(transform.position.y / 7);
+            if (pl)
+            {
+                state = 0;
+                player = null;
+                return;
+            }
+            float distance = transform.position.x - throwable.transform.position.x; // if positive = throwable to the left, vice versa
             if (Mathf.Abs(distance) > 1.5f)
             {// keep moving closer
                 if (Mathf.Abs(transform.position.x - player.position.x) < 1f && !punchCooldown)
@@ -97,8 +113,8 @@ public class Brute : MonoBehaviour
             {
                 anim.SetBool("running", false);
                 throwable.GetComponent<Throwable>().enemy = true;
-                throwable.parent = grabPoint.transform;
-                throwable.localPosition = Vector3.zero;
+                throwable.transform.parent = grabPoint.transform;
+                throwable.transform.localPosition = Vector3.zero;
                 throwable.gameObject.GetComponent<Rigidbody2D>().gravityScale = 0;
                 anim.SetTrigger("grab");
                 canGrab = false;
@@ -119,10 +135,12 @@ public class Brute : MonoBehaviour
     IEnumerator ReleaseThrowable()
     {
         yield return new WaitForSeconds(1f);
+        if(throwable==null || player==null)yield break;
         Rigidbody2D throwRB = throwable.gameObject.GetComponent<Rigidbody2D>();
         float distance = transform.position.x - player.position.x;
         transform.rotation = Quaternion.Euler(0, distance > 0 ? 0 : 180, 0);
-        throwable.parent = null;
+        throwable.GetComponent<Throwable>().enemy = true;
+        throwable.transform.parent = null;
         throwRB.gravityScale = 1;
         Vector2 direction = (player.position - throwable.transform.position).normalized;
         direction += Vector2.up * 0.1f;

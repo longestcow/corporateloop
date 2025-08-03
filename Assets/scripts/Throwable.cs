@@ -12,7 +12,7 @@ public class Throwable : MonoBehaviour
     LayerMask layerMask;
     public Collider2D col;
     int throwTimes = -1;
-    public int throwTimesFR = 0;
+    // public int throwTimesFR = 0;
     public int health = 4;
     // Start is called before the first frame update
     void Start()

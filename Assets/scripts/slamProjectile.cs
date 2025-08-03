@@ -9,6 +9,7 @@ public class slamProjectile : MonoBehaviour
     {
         if (transform.rotation.eulerAngles.y == 0) this.gameObject.GetComponent<Rigidbody2D>().velocity = new Vector2(10, 0);
         else this.gameObject.GetComponent<Rigidbody2D>().velocity = new Vector2(-10, 0);
+        Destroy(gameObject, 4);
     }
 
     // Update is called once per frame

@@ -6,17 +6,23 @@ using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class StateManager : MonoBehaviour
 {
     public Animator canvasAnim;
 
-    [HideInInspector] public bool started = false, paused = false, options = false, waitingKeybind = false;
+    [HideInInspector] public bool started = false, paused = false, options = false, waitingKeybind = false, enemyStun = false;
     int currKeybindID;
     public GameObject pause, keybindsParent;
     public Player player;
-    public KeyCode[] keybinds = { KeyCode.Mouse0, KeyCode.Mouse1, KeyCode.E, KeyCode.Space, KeyCode.A, KeyCode.D, KeyCode.W, KeyCode.Escape };
+    public KeyCode[] keybinds = { KeyCode.LeftShift, KeyCode.Space, KeyCode.Mouse1, KeyCode.Mouse0, KeyCode.A, KeyCode.D, KeyCode.W, KeyCode.Escape };
     public float playerPunchDmg = 2;
+    public Material hurtMat;
+    public GameObject itemsParent;
+    public Toggle timerToggle, keybindToggle;
+    public Boss boss;
+    GameObject interactText;
     /*
      * 0 - ability 1
      * 1 - ability 2
@@ -35,17 +41,20 @@ public class StateManager : MonoBehaviour
         player = GameObject.Find("player").GetComponent<Player>();
         StartCoroutine(enablePause());
         canvasAnim.updateMode = AnimatorUpdateMode.UnscaledTime;
-        Time.timeScale = 0f; //                                        RPC LOOK AT THIS IF YOURE CONFUSED ABOUT ANYTHING THE GAME IS PAUSED AT THE VERY START ALWAYS
+        Time.timeScale = 0f;
+        keybinds = new KeyCode[] { KeyCode.LeftShift, KeyCode.Space, KeyCode.Mouse1, KeyCode.Mouse0, KeyCode.A, KeyCode.D, KeyCode.W, KeyCode.Escape }; // default
         for (int i = 0; i <= 7; i++)
         {
-            print(PlayerPrefs.GetInt("keybind" + i));
             if (PlayerPrefs.GetInt("keybind" + i) != 0)
             {
                 keybinds[i] = (KeyCode)PlayerPrefs.GetInt("keybind" + i);
-                print(keybinds[i]);
             }
             keybindsParent.transform.GetChild(i).GetChild(0).GetComponent<TextMeshProUGUI>().text = getKeyName(keybinds[i]);
         }
+        interactText = player.transform.GetChild(0).GetChild(0).gameObject;
+        SetDescriptions();
+        SFXManager.instance.changeMusic(1, player.transform);
+
     }
 
     // Update is called once per frame
@@ -62,11 +71,14 @@ public class StateManager : MonoBehaviour
 
                     keybindsParent.transform.GetChild(currKeybindID).GetChild(0).GetComponent<TextMeshProUGUI>().text = keybindName;
                     waitingKeybind = false;
-                    currKeybindID = 999;
-                    
+
                     PlayerPrefs.SetInt("keybind" + currKeybindID, (int)vKey);
                     print((KeyCode)PlayerPrefs.GetInt("keybind" + currKeybindID));
                     PlayerPrefs.Save();
+                    currKeybindID = 999;
+
+                    SetDescriptions();
+
                     break;
                 }
 
@@ -75,11 +87,17 @@ public class StateManager : MonoBehaviour
         }
     }
 
+    void LateUpdate()
+    {
+        interactText.transform.rotation = Quaternion.identity;
+    }
+
     public void Play()
     {
         canvasAnim.SetTrigger("playButton");
         if (started)
         {
+            SFXManager.instance.changeMusic(SFXManager.instance.prevMusicIndex, player.transform);
             paused = false;
             Time.timeScale = 1.0f;
             options = false;
@@ -88,6 +106,7 @@ public class StateManager : MonoBehaviour
         else
         {
             //game loop start
+            SFXManager.instance.changeMusic(SFXManager.instance.prevMusicIndex, player.transform);
             started = true;
             Time.timeScale = 1.0f;
             options = false;
@@ -113,6 +132,7 @@ public class StateManager : MonoBehaviour
     }
     public void Pause()
     {
+        SFXManager.instance.changeMusic(1, player.transform);
         canvasAnim.SetTrigger("pause");
         paused = true;
         Time.timeScale = 0f;
@@ -150,15 +170,25 @@ public class StateManager : MonoBehaviour
         yield return new WaitForSeconds(0.5f);
         pause.SetActive(true);
     }
-    IEnumerator HitStun()
+    public IEnumerator HitStun(enemyHurtbox enem)
     {
         //do funny thing with music like hollow knight
-        Time.timeScale = 0f;
-        paused = true;
+        enem.sprite.material = hurtMat;
+        Time.timeScale = 0.001f;
+        enemyStun = true;
         yield return new WaitForSecondsRealtime(0.2f);
         Time.timeScale = 1;
+        enem.sprite.material = enem.ogMat;
+
         yield return new WaitForSecondsRealtime(0.2f);
-        paused = false;
+        enemyStun = false;
+
+    }
+
+    public void clearPuddles()
+    {
+        foreach (GameObject obj in GameObject.FindGameObjectsWithTag("water"))
+            Destroy(obj);
     }
 
 
@@ -166,13 +196,94 @@ public class StateManager : MonoBehaviour
     {
         //do funny thing with music like hollow knight
         Time.timeScale = 0f;
-        paused = true;
+        enemyStun = true;
         coolstun = true;
         yield return new WaitForSecondsRealtime(0.5f);
         Time.timeScale = 1;
         coolstun = false;
         yield return new WaitForSecondsRealtime(0.2f);
-        paused = false;
+        enemyStun = false;
+    }
+
+    public void abilityDescEnter(int id)
+    {
+        itemsParent.transform.GetChild(id).GetChild(0).gameObject.SetActive(true);
+    }
+    public void abilityDescExit(int id)
+    {
+        itemsParent.transform.GetChild(id).GetChild(0).gameObject.SetActive(false);
+    }
+
+    public void SetDescriptions()
+    {
+        player.transform.GetChild(0).GetComponentInChildren<TextMeshPro>(true).text = "[" + getKeyName(keybinds[6]) + "]";
+        for (int i = 0; i < 3; i++)
+        {
+            itemsParent.transform.GetChild(i).GetChild(0).GetComponentInChildren<TextMeshProUGUI>(true).text = getAbilityDesc(player.items[i]) + " " + getKeyName(keybinds[i]);
+            itemsParent.transform.GetChild(i).GetChild(1).GetComponent<TextMeshProUGUI>().text = "[" + getKeyName(keybinds[i]) + "]";
+        }
+
+    }
+
+    String getAbilityDesc(int id)
+    {
+        switch (id)
+        {
+            case 0:
+                return "nothing";
+            case 1:
+                return "coffee";
+            case 2:
+                return "drug";
+            case 3:
+                return "pen";
+            case 4:
+                return "strength";
+            case 5:
+                return "jump";
+            case 6:
+                return "stick";
+            case 7:
+                return "scissor";
+            case 8:
+                return "slam";
+            default:
+                return "nothing";
+        }
+    }
+
+    public void Toggle(int id)
+    {
+        if (id == 0)
+        {
+            //timerToggle.isOn
+        }
+        else
+        {
+            SetDescriptions();
+            if (keybindToggle.isOn)
+            {
+                itemsParent.GetComponent<RectTransform>().anchoredPosition = new Vector3(0, 323, 0);
+                for (int i = 0; i < 3; i++)
+                {
+                    itemsParent.transform.GetChild(i).GetChild(1).GetComponent<TextMeshProUGUI>().enabled = true;
+                }
+            }
+            else
+            {
+                itemsParent.GetComponent<RectTransform>().anchoredPosition = new Vector3(0, 315, 0);
+                for (int i = 0; i < 3; i++)
+                {
+                    itemsParent.transform.GetChild(i).GetChild(1).GetComponent<TextMeshProUGUI>().enabled = false;
+                }
+            }
+        }
+    }
+
+    public void bossStart()
+    {
+        boss.Cutscene();
+        SFXManager.instance.changeMusic(2, transform);
     }
 
 }

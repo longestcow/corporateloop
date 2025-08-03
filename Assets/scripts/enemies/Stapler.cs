@@ -52,6 +52,7 @@ public class Stapler : MonoBehaviour
     {
         punchCooldown = true;
         yield return new WaitForSeconds(0.6f);
+        if(stapleSpawn==null)yield break;
         GameObject stapleObj = Instantiate(staple, stapleSpawn.transform);
         stapleObj.transform.localPosition = Vector3.zero;
         stapleObj.transform.parent = null;

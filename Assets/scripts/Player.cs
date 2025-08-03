@@ -22,7 +22,8 @@ public class Player : MonoBehaviour
     public Scrollbar healthbar;
     public GameObject throwPoint;
     StateManager stateManager;
-    int[] items = new int[3];
+    public int[] items = new int[3];
+    bool slamming = false;
     /*
      * 0 - nothing
      * 1 - coffee - implemented
@@ -30,15 +31,15 @@ public class Player : MonoBehaviour
      * 3 - pen - implemented - obtainable
      * 4 - strength - implemented - obtainable
      * 5 - jump - implemented - obtainable
-     * 6 - stick
-     * 7 - scissor
-     * 8 - slam - implemented (kinda)
+     * 6 - stick - uh oh
+     * 7 - scissor - cancelled
+     * 8 - slam - implemented - rpc make it obtainable
     */
     public Sprite[] itemsprites;
     public Image[] itemholders;
     int[] itemcooldown = new int[3];
 
-    bool coffeemode;
+    public bool coffeemode;
     bool steroidmode;
     bool punchCooldown;
     bool grabbing = false;
@@ -66,7 +67,7 @@ public class Player : MonoBehaviour
     {
         runcount = 0;
         items[0] = 1;
-        items[1] = 0;
+        items[1] = 8;
         items[2] = 0;
         itemcooldown[0] = -1;
         itemcooldown[1] = -1;
@@ -94,8 +95,9 @@ public class Player : MonoBehaviour
         if (items[1] == 3) pencount++;
         if (items[2] == 3) pencount++;
         health = maxhealth;
-        transform.position = new Vector3(-5,-2,0);
+        transform.position = new Vector3(-5, -2, 0);
         sprite.color = new Color(1, 1, 1, 1);
+        stateManager.SetDescriptions();
     }
 
     void Update()
@@ -109,25 +111,32 @@ public class Player : MonoBehaviour
 
         input = 0;
         input += Input.GetKey(stateManager.keybinds[4]) ? -1 : Input.GetKey(stateManager.keybinds[5]) ? 1 : 0;
-        if (input != 0) transform.rotation = Quaternion.Euler(0, input > 0 ? 0 : 180, 0);
 
 
         cam.transform.position = new Vector3(Mathf.Lerp(cam.transform.position.x, input * speed / 10f, 0.01f), Mathf.Lerp(cam.transform.position.y, 7 * Mathf.Round(transform.transform.position.y/7), 0.01f), -10);
 
-        if (!stateManager.started || stateManager.paused || iframe || dead || grabbing || nextrooming || nextroomed) return;
+        if (!stateManager.enemyStun && input != 0 && stateManager.started && !stateManager.paused && !dead && !iframe && !slamming) 
+            transform.rotation = Quaternion.Euler(0, input > 0 ? 0 : 180, 0);
 
-
-        anim.SetBool("running", input != 0);
-        bool pointerOverUI = EventSystem.current.IsPointerOverGameObject();
-
-        if (!pointerOverUI && Input.GetKeyDown(stateManager.keybinds[3]) && !punchCooldown && col.IsTouchingLayers(groundLayer))
-            anim.SetTrigger("punch");
-
+        if (!stateManager.started || stateManager.paused || iframe || dead || grabbing || nextrooming || nextroomed || slamming) return;
 
         if (anim.GetCurrentAnimatorClipInfo(0)[0].clip.name.Contains("Punch") || anim.GetCurrentAnimatorClipInfo(0)[0].clip.name.Contains("Jab"))
             input /= 10;
-
+        anim.SetBool("running", input != 0);
         rb.velocity = new Vector2(input * speed, rb.velocity.y);
+
+        if (coffeemode)
+        {
+            return;
+        }
+
+            
+        bool pointerOverUI = EventSystem.current.IsPointerOverGameObject();
+        if (!pointerOverUI && Input.GetKeyDown(stateManager.keybinds[3]) && !punchCooldown && col.IsTouchingLayers(groundLayer)) 
+            anim.SetTrigger("punch");
+       
+
+
 
         //For checking if items are being used
         if (Input.GetKeyDown(stateManager.keybinds[0])) UseItem(0);
@@ -155,9 +164,12 @@ public class Player : MonoBehaviour
         itemcooldown[2]--;
 
         //for making items under cooldown a darker colour
-        itemholders[0].color = (itemcooldown[0] >= 0) ? new Color(0.3f, 0.3f, 0.3f, 1) : new Color(1, 1, 1, 1);
-        itemholders[1].color = (itemcooldown[1] >= 0) ? new Color(0.3f, 0.3f, 0.3f, 1) : new Color(1, 1, 1, 1);
-        itemholders[2].color = (itemcooldown[2] >= 0) ? new Color(0.3f, 0.3f, 0.3f, 1) : new Color(1, 1, 1, 1);
+        if (!coffeemode)
+        {
+            itemholders[0].color = (itemcooldown[0] >= 0) ? new Color(0.3f, 0.3f, 0.3f, 1) : new Color(1, 1, 1, 1);
+            itemholders[1].color = (itemcooldown[1] >= 0) ? new Color(0.3f, 0.3f, 0.3f, 1) : new Color(1, 1, 1, 1);
+            itemholders[2].color = (itemcooldown[2] >= 0) ? new Color(0.3f, 0.3f, 0.3f, 1) : new Color(1, 1, 1, 1);
+        }
 
         if (items[0] == 3 && itemcooldown[0] < 0) itemholders[0].color = (pencount <= 0) ? new Color(0.3f, 0.3f, 0.3f, 1) : new Color(1, 1, 1, 1);
         if (items[1] == 3 && itemcooldown[1] < 0) itemholders[1].color = (pencount <= 0) ? new Color(0.3f, 0.3f, 0.3f, 1) : new Color(1, 1, 1, 1);
@@ -189,6 +201,7 @@ public class Player : MonoBehaviour
         items[2] = items[1];
         items[1] = items[0];
         items[0] = itemid;
+        stateManager.SetDescriptions();
     }
 
     void UseItem(int outofthree) //called when an item is being used
@@ -236,11 +249,21 @@ public class Player : MonoBehaviour
 
     IEnumerator CoffeeTimer()
     {
+        //for making items under cooldown a darker colour
+        
+        itemholders[0].color = new Color(0.3f, 0.3f, 0.3f, 1);
+        itemholders[1].color = new Color(0.3f, 0.3f, 0.3f, 1);
+        itemholders[2].color = new Color(0.3f, 0.3f, 0.3f, 1);
         if (speed == 12) speed = 16;
         if (speed == 8) speed = 12;
-        if (speed == 4) { coffeemode = true; speed = 8; }
-        yield return new WaitForSeconds(3);
-        if (speed == 8) { coffeemode = false; speed = 4; }
+        if (speed == 4) { coffeemode = true; speed = 8; anim.speed = 1.4f;}
+        sprite.color = new Color(sprite.color.r, sprite.color.g, sprite.color.b, 0.7f);
+        yield return new WaitForSeconds(2.5f);
+        itemholders[0].color = new Color(1, 1, 1, 1);
+        itemholders[1].color = new Color(1, 1, 1, 1);
+        itemholders[2].color = new Color(1, 1, 1, 1);
+        sprite.color = new Color(sprite.color.r, sprite.color.g, sprite.color.b, 1);
+        if (speed == 8) { coffeemode = false; speed = 4; anim.speed = 1;}
         if (speed == 12) speed = 8;
         if (speed == 16) speed = 12;
     }
@@ -340,11 +363,25 @@ public class Player : MonoBehaviour
 
     void Slam()
     {
-        rb.velocity = new Vector2(rb.velocity.x, 1f);
-        //anim.SetTrigger("slam"); you make this
+
+        StartCoroutine(slamAttack());
+        pencount--;
+    }
+    IEnumerator slamAttack()
+    {
+        slamming = true;
+        rb.velocity = new Vector2(0, 5f);
+        anim.SetBool("running", false);
+        anim.SetTrigger("slam");
+        yield return new WaitForSeconds(0.2f);
+        rb.velocity = new Vector2(0, -8f);
+        yield return new WaitForSeconds(0.12f);
         Instantiate(slampng, this.transform.position, Quaternion.Euler(this.transform.rotation.eulerAngles.x, 0, this.transform.rotation.eulerAngles.z), null);
         Instantiate(slampng, this.transform.position, Quaternion.Euler(this.transform.rotation.eulerAngles.x, 180, this.transform.rotation.eulerAngles.z), null);
-        pencount--;
+        yield return new WaitForSeconds(0.2f);
+        slamming = false;
+
+        // camera shake
     }
 
     public void Hurt(float dmg, int id)
@@ -390,7 +427,7 @@ public class Player : MonoBehaviour
                 anim.SetTrigger("basicDead");
             }
             else // need to add jump off and elevator
-            { 
+            {
                 anim.SetTrigger("basicDead");
             }
         }
@@ -426,11 +463,16 @@ public class Player : MonoBehaviour
         nextrooming = true;
         rb.velocity = Vector2.zero;
         anim.SetBool("running", false);
-        yield return new WaitForSeconds(1);
+        yield return new WaitForSeconds(0.7f);
         nextrooming = false;
         nextroomed = true;
         transform.position = transform.position + new Vector3(0,7,0);
-        yield return new WaitForSeconds(1);
+        if (Mathf.Round(transform.position.y / 7) > 14) // boss start
+        {
+            stateManager.bossStart();
+        }
+        stateManager.clearPuddles();
+        yield return new WaitForSeconds(0.7f);
         nextroomed = false;
     }
     public IEnumerator Elevator()
@@ -462,7 +504,9 @@ public class Player : MonoBehaviour
 
     public IEnumerator death()
     {
-        yield return new WaitForSeconds(2);
+        SFXManager.instance.fadeOut();
+        yield return new WaitForSeconds(3);
+        SFXManager.instance.fadeIn();
         Restart();
     }
 

@@ -90,7 +90,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cf63147eb7471ef4c97ef6dba0bc0e85, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  health: 10
+  health: 8
+  sprite: {fileID: 0}
+  ogMat: {fileID: 0}
 --- !u!1 &4330057636154441857
 GameObject:
   m_ObjectHideFlags: 0
