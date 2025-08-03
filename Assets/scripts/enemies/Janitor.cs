@@ -21,6 +21,7 @@ public class Janitor : MonoBehaviour
     public float chosenSpot = 0;
     int cycleSinceWater = 0;
     Coroutine currentCycle;
+    public GameObject hp;
     void Start()
     {
         anim = GetComponent<Animator>();
@@ -32,6 +33,13 @@ public class Janitor : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
+
+        if (GameObject.Find("KillZone").transform.position.y > transform.position.y)
+        {
+            hp.SetActive(true);
+            Destroy(this.gameObject, 0.1f);
+        }
+
         if (state == 1 && Mathf.Abs(transform.position.x - chosenSpot) < 0.5f)
         {
             state = 0;

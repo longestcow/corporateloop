@@ -16,6 +16,8 @@ public class Brute : MonoBehaviour
     Rigidbody2D rb;
     bool punchCooldown = false, canGrab=true;
     public GameObject grabPoint;
+
+    public GameObject hp;
     void Start()
     {
         anim = GetComponent<Animator>();
@@ -26,6 +28,13 @@ public class Brute : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
+
+        if (GameObject.Find("KillZone").transform.position.y > transform.position.y)
+        {
+            hp.SetActive(true);
+            Destroy(this.gameObject, 0.1f);
+        }
+
         if (anim.GetCurrentAnimatorClipInfo(0)[0].clip.name.Contains("Dead")) { if (throwable != null) throwable.transform.parent = null; return; } //dudes dead, waiting to get destroyed now
         if (state == 0) // look for player
         {

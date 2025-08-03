@@ -5,6 +5,7 @@ using UnityEngine;
 public class RoomGeneration : MonoBehaviour
 {
     public GameObject roomprefab;
+    public static int elevatorroomindex;
 
     // Start is called before the first frame update
     void Start()
@@ -13,7 +14,9 @@ public class RoomGeneration : MonoBehaviour
         {
             Instantiate(roomprefab, new Vector3(0, 7 * i, 0), Quaternion.Euler(0, 0, 0), this.transform);
         }
-        transform.GetChild(Random.Range(3, transform.childCount/2) * 2 - 1).gameObject.GetComponent<RoomSetUp>().MakeElevator();
+        elevatorroomindex = Random.Range(3, transform.childCount / 2) * 2 - 1;
+        transform.GetChild(elevatorroomindex).gameObject.GetComponent<RoomSetUp>().MakeElevator();
+        print(elevatorroomindex);
     }
 
     // Update is called once per frame

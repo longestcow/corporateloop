@@ -37,6 +37,8 @@ public class Player : MonoBehaviour
     */
     public Sprite[] itemsprites;
     public Image[] itemholders;
+    public Sprite[] itemDesc;
+    public Image[] itemDescHolders;
     int[] itemcooldown = new int[3];
 
     public bool coffeemode;
@@ -63,11 +65,15 @@ public class Player : MonoBehaviour
     public bool fallingelevator;
     float elevatorspeed;
 
+    public bool working;
+    int workcounter;
+    public GameObject faker;
+
     void Start()
     {
         runcount = 0;
-        items[0] = 1;
-        items[1] = 8;
+        items[0] = 0;
+        items[1] = 0;
         items[2] = 0;
         itemcooldown[0] = -1;
         itemcooldown[1] = -1;
@@ -90,19 +96,33 @@ public class Player : MonoBehaviour
         itemholders[0].sprite = itemsprites[items[0]];
         itemholders[1].sprite = itemsprites[items[1]];
         itemholders[2].sprite = itemsprites[items[2]];
+        itemDescHolders[0].sprite = itemDesc[items[0]];
+        itemDescHolders[1].sprite = itemDesc[items[1]];
+        itemDescHolders[2].sprite = itemDesc[items[2]];
         pencount = 0;
         if (items[0] == 3) pencount++;
         if (items[1] == 3) pencount++;
         if (items[2] == 3) pencount++;
+        maxhealth++;
         health = maxhealth;
         transform.position = new Vector3(-5, -2, 0);
         sprite.color = new Color(1, 1, 1, 1);
         stateManager.SetDescriptions();
+        working = true;
+        workcounter = 0;
     }
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.R)) Restart();
+
+        
+
+        if (killzone.killtime)
+        {
+            cam.transform.position = new Vector3(0, Mathf.Lerp(cam.transform.position.y, 7 * Mathf.Round(GameObject.Find("KillZone").transform.position.y / 7), 0.1f), -10);
+            return;
+        }
+
 
         if (inelevator || stuckinelevator || fallingelevator) return;
 
@@ -114,6 +134,23 @@ public class Player : MonoBehaviour
 
 
         cam.transform.position = new Vector3(Mathf.Lerp(cam.transform.position.x, input * speed / 10f, 0.01f), Mathf.Lerp(cam.transform.position.y, 7 * Mathf.Round(transform.transform.position.y/7), 0.01f), -10);
+
+
+        if (working && ((Input.GetKey(stateManager.keybinds[4]) || Input.GetKey(stateManager.keybinds[5]))))
+        {
+            working = false;
+        }
+        if (working)
+        {
+            sprite.sortingOrder = -999;
+            faker.SetActive(true);
+            return;
+        }
+        else
+        {
+            sprite.sortingOrder = 36;
+            faker.SetActive(false);
+        }
 
         if (!stateManager.enemyStun && input != 0 && stateManager.started && !stateManager.paused && !dead && !iframe && !slamming) 
             transform.rotation = Quaternion.Euler(0, input > 0 ? 0 : 180, 0);
@@ -158,6 +195,21 @@ public class Player : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if (working) {
+            workcounter++;
+            if (workcounter > 120)
+            {
+                health -= 0.1f;
+                if (health < 0)
+                {
+                    dead = true;
+                    AddItem(1);
+                    working = false;
+                    StartCoroutine("death");
+                }
+            }
+        }
+
         //for cooldown of items
         itemcooldown[0]--;
         itemcooldown[1]--;
@@ -170,10 +222,6 @@ public class Player : MonoBehaviour
             itemholders[1].color = (itemcooldown[1] >= 0) ? new Color(0.3f, 0.3f, 0.3f, 1) : new Color(1, 1, 1, 1);
             itemholders[2].color = (itemcooldown[2] >= 0) ? new Color(0.3f, 0.3f, 0.3f, 1) : new Color(1, 1, 1, 1);
         }
-
-        if (items[0] == 3 && itemcooldown[0] < 0) itemholders[0].color = (pencount <= 0) ? new Color(0.3f, 0.3f, 0.3f, 1) : new Color(1, 1, 1, 1);
-        if (items[1] == 3 && itemcooldown[1] < 0) itemholders[1].color = (pencount <= 0) ? new Color(0.3f, 0.3f, 0.3f, 1) : new Color(1, 1, 1, 1);
-        if (items[2] == 3 && itemcooldown[2] < 0) itemholders[2].color = (pencount <= 0) ? new Color(0.3f, 0.3f, 0.3f, 1) : new Color(1, 1, 1, 1);
 
         if (nextrooming) sprite.color = new Color(1,1,1, sprite.color.a - (1f / 60f));
         else if (nextroomed) sprite.color = new Color(1, 1, 1, sprite.color.a + (1f / 60f));
@@ -286,11 +334,8 @@ public class Player : MonoBehaviour
 
     void PenThrow()
     {
-        if (pencount > 0)
-        {
-            Instantiate(pen, this.transform.position, this.transform.rotation, null);
-            pencount--;
-        }
+        Instantiate(pen, this.transform.position, this.transform.rotation, null);
+        pencount--;
     }
 
     void Grab()
@@ -471,6 +516,14 @@ public class Player : MonoBehaviour
         {
             stateManager.bossStart();
         }
+        if (Mathf.Round(transform.transform.position.y / 7) == RoomGeneration.elevatorroomindex + 1)
+        {
+            stateManager.elevatorStart();
+        }
+        if (Mathf.Round(transform.transform.position.y / 7) == RoomGeneration.elevatorroomindex + 2)
+        {
+            stateManager.elevatorStop();
+        }
         stateManager.clearPuddles();
         yield return new WaitForSeconds(0.7f);
         nextroomed = false;
@@ -506,6 +559,7 @@ public class Player : MonoBehaviour
     {
         SFXManager.instance.fadeOut();
         yield return new WaitForSeconds(3);
+        SFXManager.instance.changeMusic(0, stateManager.transform);
         SFXManager.instance.fadeIn();
         Restart();
     }

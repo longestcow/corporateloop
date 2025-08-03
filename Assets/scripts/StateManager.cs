@@ -31,12 +31,14 @@ public class StateManager : MonoBehaviour
      * 4 - left
      * 5 - right
      * 6 - interact  
-     * 7 - pause (not implemented yet)
+     * 7 - pause
      */
     public static bool coolstun;
+    public bool duringbossfight;
 
     void Start()
     {
+        duringbossfight = false;
         coolstun = false;
         player = GameObject.Find("player").GetComponent<Player>();
         StartCoroutine(enablePause());
@@ -101,7 +103,8 @@ public class StateManager : MonoBehaviour
         canvasAnim.SetTrigger("playButton");
         if (started)
         {
-            SFXManager.instance.changeMusic(SFXManager.instance.prevMusicIndex, player.transform);
+            if (!duringbossfight)
+                SFXManager.instance.changeMusic(0, player.transform);
             paused = false;
             Time.timeScale = 1.0f;
             options = false;
@@ -110,7 +113,8 @@ public class StateManager : MonoBehaviour
         else
         {
             //game loop start
-            SFXManager.instance.changeMusic(SFXManager.instance.prevMusicIndex, player.transform);
+            if (!duringbossfight)
+                SFXManager.instance.changeMusic(0, player.transform);
             started = true;
             Time.timeScale = 1.0f;
             options = false;
@@ -136,7 +140,8 @@ public class StateManager : MonoBehaviour
     }
     public void Pause()
     {
-        SFXManager.instance.changeMusic(1, player.transform);
+        if (!duringbossfight)
+            SFXManager.instance.changeMusic(1, player.transform);
         canvasAnim.SetTrigger("pause");
         paused = true;
         Time.timeScale = 0f;
@@ -220,10 +225,8 @@ public class StateManager : MonoBehaviour
 
     public void SetDescriptions()
     {
-        player.transform.GetChild(0).GetComponentInChildren<TextMeshPro>(true).text = "[" + getKeyName(keybinds[6]) + "]";
         for (int i = 0; i < 3; i++)
         {
-            itemsParent.transform.GetChild(i).GetChild(0).GetComponentInChildren<TextMeshProUGUI>(true).text = getAbilityDesc(player.items[i]) + " " + getKeyName(keybinds[i]);
             itemsParent.transform.GetChild(i).GetChild(1).GetComponent<TextMeshProUGUI>().text = "[" + getKeyName(keybinds[i]) + "]";
         }
 
@@ -287,7 +290,16 @@ public class StateManager : MonoBehaviour
     public void bossStart()
     {
         boss.Cutscene();
+        duringbossfight = true;
         SFXManager.instance.changeMusic(2, transform);
+    }
+    public void elevatorStart()
+    {
+        SFXManager.instance.changeMusic(3, transform);
+    }
+    public void elevatorStop()
+    {
+        SFXManager.instance.changeMusic(0, transform);
     }
 
 }

@@ -13,6 +13,8 @@ public class Stapler : MonoBehaviour
     Rigidbody2D rb;
     bool punchCooldown = false;
     public GameObject stapleSpawn, staple;
+
+    public GameObject hp;
     void Start()
     {
         anim = GetComponent<Animator>();
@@ -23,6 +25,12 @@ public class Stapler : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
+        if (GameObject.Find("KillZone").transform.position.y > transform.position.y)
+        {
+            hp.SetActive(true);
+            Destroy(this.gameObject, 0.1f);
+        }
+
         if (anim.GetCurrentAnimatorClipInfo(0)[0].clip.name.Contains("Dead")) return; //dudes dead, waiting to get destroyed now
         if (state == 0) // look for player
         {
