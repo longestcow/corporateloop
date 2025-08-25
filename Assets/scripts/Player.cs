@@ -69,8 +69,11 @@ public class Player : MonoBehaviour
     int workcounter;
     public GameObject faker;
 
+    int itemcyclecounter;
+
     void Start()
     {
+        itemcyclecounter = 0;
         runcount = 0;
         items[0] = 0;
         items[1] = 0;
@@ -136,7 +139,7 @@ public class Player : MonoBehaviour
         cam.transform.position = new Vector3(Mathf.Lerp(cam.transform.position.x, input * speed / 10f, 0.01f), Mathf.Lerp(cam.transform.position.y, 7 * Mathf.Round(transform.transform.position.y/7), 0.01f), -10);
 
 
-        if (working && ((Input.GetKey(stateManager.keybinds[4]) || Input.GetKey(stateManager.keybinds[5]))))
+        if ((workcounter <= 60 * 5) && working && ((Input.GetKey(stateManager.keybinds[4]) || Input.GetKey(stateManager.keybinds[5]))))
         {
             working = false;
         }
@@ -197,12 +200,14 @@ public class Player : MonoBehaviour
     {
         if (working) {
             workcounter++;
-            if (workcounter > 120)
+            if (workcounter > 60 * 5)
             {
+                dead = true;
                 health -= 0.1f;
                 if (health < 0)
                 {
-                    dead = true;
+                    anim.SetBool("dead", true);
+                    anim.SetTrigger("basicDead");
                     AddItem(1);
                     working = false;
                     StartCoroutine("death");
@@ -246,9 +251,7 @@ public class Player : MonoBehaviour
 
     void AddItem(int itemid) //call with id of the item to add 
     {
-        items[2] = items[1];
-        items[1] = items[0];
-        items[0] = itemid;
+        items[itemcyclecounter++%3] = itemid;
         stateManager.SetDescriptions();
     }
 
@@ -451,7 +454,7 @@ public class Player : MonoBehaviour
             }
             if (id == 2)
             {
-                anim.SetTrigger("slip");
+                anim.SetTrigger("basicDead");
                 AddItem(5);
             }
             if (id == 3)

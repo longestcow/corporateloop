@@ -225,6 +225,7 @@ public class StateManager : MonoBehaviour
 
     public void SetDescriptions()
     {
+        player.transform.GetChild(0).GetComponentInChildren<TextMeshPro>(true).text = "[" + getKeyName(keybinds[6]) + "]";
         for (int i = 0; i < 3; i++)
         {
             itemsParent.transform.GetChild(i).GetChild(1).GetComponent<TextMeshProUGUI>().text = "[" + getKeyName(keybinds[i]) + "]";
