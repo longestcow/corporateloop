@@ -16,7 +16,7 @@ public class StateManager : MonoBehaviour
     int currKeybindID;
     public GameObject pause, keybindsParent;
     public Player player;
-    public KeyCode[] keybinds = { KeyCode.LeftShift, KeyCode.Space, KeyCode.Mouse1, KeyCode.Mouse0, KeyCode.A, KeyCode.D, KeyCode.W, KeyCode.Escape };
+    public KeyCode[] keybinds = { KeyCode.Z, KeyCode.X, KeyCode.C, KeyCode.Space, KeyCode.LeftArrow, KeyCode.DownArrow, KeyCode.UpArrow, KeyCode.Escape };
     public float playerPunchDmg = 2;
     public Material hurtMat;
     public GameObject itemsParent;

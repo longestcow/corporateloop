@@ -39,6 +39,7 @@ public class Player : MonoBehaviour
     public Image[] itemholders;
     public Sprite[] itemDesc;
     public Image[] itemDescHolders;
+    public GameObject[] itemexclams;
     int[] itemcooldown = new int[3];
 
     public bool coffeemode;
@@ -118,7 +119,17 @@ public class Player : MonoBehaviour
     void Update()
     {
 
-        
+        if (itemcyclecounter > 0)
+        {
+            if (transform.position.y < 5)
+                itemexclams[(itemcyclecounter - 1) % 3].SetActive(true);
+            else
+            {
+                itemexclams[0].SetActive(false);
+                itemexclams[1].SetActive(false);
+                itemexclams[2].SetActive(false);
+            }
+        }
 
         if (killzone.killtime)
         {
@@ -134,12 +145,14 @@ public class Player : MonoBehaviour
 
         input = 0;
         input += Input.GetKey(stateManager.keybinds[4]) ? -1 : Input.GetKey(stateManager.keybinds[5]) ? 1 : 0;
+        input += (Input.GetAxis("Horizontal") < -0.1f) ? -1 : (Input.GetAxis("Horizontal") > 0.1f) ? 1 : 0;
+        input = Mathf.Clamp(input, -1,1);
 
 
         cam.transform.position = new Vector3(Mathf.Lerp(cam.transform.position.x, input * speed / 10f, 0.01f), Mathf.Lerp(cam.transform.position.y, 7 * Mathf.Round(transform.transform.position.y/7), 0.01f), -10);
 
 
-        if ((workcounter <= 60 * 5) && working && ((Input.GetKey(stateManager.keybinds[4]) || Input.GetKey(stateManager.keybinds[5]))))
+        if ((workcounter <= 60 * 5) && working && ((Input.GetKey(stateManager.keybinds[4]) || Input.GetKey(stateManager.keybinds[5]) || Mathf.Abs(Input.GetAxis("Horizontal")) > 0.1f)))
         {
             working = false;
         }
@@ -158,7 +171,7 @@ public class Player : MonoBehaviour
         if (!stateManager.enemyStun && input != 0 && stateManager.started && !stateManager.paused && !dead && !iframe && !slamming) 
             transform.rotation = Quaternion.Euler(0, input > 0 ? 0 : 180, 0);
 
-        if (!stateManager.started || stateManager.paused || iframe || dead || grabbing || nextrooming || nextroomed || slamming) return;
+        if (!stateManager.started || stateManager.paused || iframe || dead || grabbing || nextrooming || slamming || RoomSetUp.elevatorscene) return;
 
         if (anim.GetCurrentAnimatorClipInfo(0)[0].clip.name.Contains("Punch") || anim.GetCurrentAnimatorClipInfo(0)[0].clip.name.Contains("Jab"))
             input /= 10;
@@ -184,13 +197,13 @@ public class Player : MonoBehaviour
         if (Input.GetKeyDown(stateManager.keybinds[2])) UseItem(2);
 
         //Room exit
-        if (col.IsTouchingLayers(LayerMask.GetMask("exit")) && Input.GetKeyDown(stateManager.keybinds[6]))
+        if (col.IsTouchingLayers(LayerMask.GetMask("exit")) && (Input.GetKeyDown(stateManager.keybinds[6]) || Input.GetAxis("Vertical") > 0.5f) && !nextrooming && !nextroomed)
         {
             StartCoroutine("NextRoom");
         }
 
         //Elevator
-        if (col.IsTouchingLayers(LayerMask.GetMask("elevator")) && Input.GetKeyDown(stateManager.keybinds[6]))
+        if (col.IsTouchingLayers(LayerMask.GetMask("elevator")) && (Input.GetKeyDown(stateManager.keybinds[6]) || Input.GetAxis("Vertical") > 0.5f) && !nextrooming && !nextroomed)
         {
             StartCoroutine("Elevator");
         }
@@ -198,7 +211,7 @@ public class Player : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (working) {
+        if (working && cam.transform.position.y < 5f) {
             workcounter++;
             if (workcounter > 60 * 5)
             {
@@ -228,8 +241,8 @@ public class Player : MonoBehaviour
             itemholders[2].color = (itemcooldown[2] >= 0) ? new Color(0.3f, 0.3f, 0.3f, 1) : new Color(1, 1, 1, 1);
         }
 
-        if (nextrooming) sprite.color = new Color(1,1,1, sprite.color.a - (1f / 60f));
-        else if (nextroomed) sprite.color = new Color(1, 1, 1, sprite.color.a + (1f / 60f));
+        if (nextrooming) sprite.color = new Color(1,1,1, sprite.color.a - (2f / 60f));
+        else if (nextroomed) sprite.color = new Color(1, 1, 1, sprite.color.a + (2f / 60f));
         
         if (!dead) darkness.color = new Color(0, 0, 0, Mathf.Clamp01(darkness.color.a - (1f / 60f)));
         else if (dead) darkness.color = new Color(0, 0, 0, Mathf.Clamp01(darkness.color.a + (1f / 60f)));
@@ -511,7 +524,7 @@ public class Player : MonoBehaviour
         nextrooming = true;
         rb.velocity = Vector2.zero;
         anim.SetBool("running", false);
-        yield return new WaitForSeconds(0.7f);
+        yield return new WaitForSeconds(0.35f);
         nextrooming = false;
         nextroomed = true;
         transform.position = transform.position + new Vector3(0,7,0);
@@ -528,7 +541,7 @@ public class Player : MonoBehaviour
             stateManager.elevatorStop();
         }
         stateManager.clearPuddles();
-        yield return new WaitForSeconds(0.7f);
+        yield return new WaitForSeconds(0.35f);
         nextroomed = false;
     }
     public IEnumerator Elevator()
@@ -549,6 +562,7 @@ public class Player : MonoBehaviour
         stuckinelevator = false;
         fallingelevator = true;
         elevatorspeed = 0.5f;
+        transform.position = new Vector3(transform.position.x, -10, transform.position.z);
         yield return new WaitForSeconds(1);
         dead = true;
         AddItem(8);

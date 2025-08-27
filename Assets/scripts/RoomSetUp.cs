@@ -20,7 +20,7 @@ public class RoomSetUp : MonoBehaviour
     // 1 - staple
     // 2 - janitor
     bool hasthrowable;
-    bool elevatorscene;
+    public static bool elevatorscene;
     int lastcount;
 
     public Sprite chosenbg;
